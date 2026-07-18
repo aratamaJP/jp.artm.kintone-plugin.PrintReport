@@ -1,12 +1,8 @@
 node_modules/
 dist/
+lib/
 
-# build directory
-plugin/js/*.js
-plugin/js/*.txt
-plugin/js/*.map
-
-# secret
-secret/*.ppk
+# Private Key
+*.ppk
 
 upload_env.ps1
