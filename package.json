@@ -1,6 +1,14 @@
 {
-  "name": "Aratama Print Report Plugin",
+  "name": "aratama-print-report-plugin",
   "version": "0.1.0",
+  "scripts": {
+    "build:dev": "cross-env NODE_ENV=development webpack",
+    "build:prod": "cross-env NODE_ENV=production webpack",
+    "upload": "dotenv -- cli-kintone plugin upload --input dist/plugin.zip",
+    "build-upload": "run-s build:dev upload",
+    "dts-gen": "kintone-dts-gen",
+    "lint": "eslint src"
+  },
   "devDependencies": {
     "@babel/core": "7.29.7",
     "@babel/preset-env": "7.29.7",
@@ -13,23 +21,13 @@
     "ajv": "8.20.0",
     "babel-loader": "9.2.1",
     "cross-env": "7.0.3",
+    "dotenv-cli": "^11.0.0",
     "eslint": "9.39.5",
     "npm-run-all": "4.1.5",
     "prettier": "3.8.5",
     "typescript": "5.9.3",
     "webpack": "5.108.4",
     "webpack-cli": "6.0.1"
-},
-  "scripts": {
-    "prestart": "npm run build",
-    "start": "node scripts/npm-start.js",
-    "upload": "cli-kintone plugin upload --input dist/plugin.zip --watch",
-    "develop": "npm run build -- --watch",
-    "keygen": "cli-kintone plugin keygen --output private.ppk",
-    "build": "cross-env NODE_ENV=development webpack",
-    "build:prod": "cross-env NODE_ENV=production webpack",
-    "dts-gen": "kintone-dts-gen",
-    "lint": "eslint src"
   },
   "dependencies": {
     "@kintone/rest-api-client": "6.2.1",
