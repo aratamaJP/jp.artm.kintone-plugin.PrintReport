@@ -1,5 +1,3 @@
-declare const kintone: any;
-
 import { createApp } from "vue";
 import PreferenceView from '@/config/views/preference_view.vue'
 

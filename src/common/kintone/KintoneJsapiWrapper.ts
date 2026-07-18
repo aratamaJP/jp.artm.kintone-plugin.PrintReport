@@ -1,10 +1,14 @@
 /**
  * Get Plugin Config
- * @param {*} pluginId
+ * @param {string} pluginId
  * @returns
  */
-export function getPluginConfig(pluginId) {
+export function getPluginConfig(pluginId: string) {
 
     return kintone.plugin.app.getConfig(pluginId);
 
+}
+
+export function getThisAppId() {
+    return kintone.app.getId();
 }

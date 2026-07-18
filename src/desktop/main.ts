@@ -1,49 +1,50 @@
-declare const kintone: any;
-
 import { PLUGIN_NAME } from "@/common/const/SystemConst";
-
-import { getPluginConfig } from '@/common/kintone/KintoneJsapiWrapper'
-
-import { CONFIG_KEYS } from '@/common/const/ConfigKeys';
+import { getPluginConfig } from '@/common/kintone/KintoneJsapiWrapper';
 import { KintoneEvents } from "@/common/kintone/KintoneEvents";
-
-
 import { PrintReport } from "./PrintReport";
 
-(function(pluginId) {
+interface Report {
+  name: string;
+  html: string;
+  enabled: boolean;
+}
 
+(function(pluginId: any) {
     'use strict';
 
     // プラグイン設定読み込み
     const configStore = getPluginConfig(pluginId);
-    const config = configStore.config ? JSON.parse(configStore.config) : null;
+    if (!configStore || !configStore.reports) {
+        return;
+    }
 
-    const printReport = new PrintReport();
+    try {
+        const reports: Report[] = JSON.parse(configStore.reports);
 
-    /**
-    * レコード詳細画面（PC） 表示時
-    */
-    kintone.events.on(KintoneEvents.Detail.Show, async function(event) {
+        kintone.events.on(KintoneEvents.Detail.Show, (event: any) => {
+            const enabledReports = reports.filter(report => report.enabled);
 
-        console.log("config", config);
+            if (enabledReports.length > 0) {
+                enabledReports.forEach((report, index) => {
+                    const printReport = new PrintReport(report, index);
+                    printReport.onDetailShow(event);
+                });
+            } else {
+                const headerSpace = kintone.app.record.getHeaderMenuSpaceElement();
+                if (headerSpace) {
+                    const messageDiv = document.createElement("div");
+                    messageDiv.innerText = `${PLUGIN_NAME}: 利用できる帳票がありません。プラグイン設定を確認してください。`;
+                    messageDiv.style.textAlign = "center";
+                    messageDiv.style.color = "red";
+                    messageDiv.style.padding = "1.5em 0";
+                    headerSpace.appendChild(messageDiv);
+                }
+            }
+            return event;
+        });
 
-        if (config) {
-            printReport.onDetailShow(event, config);
-        } else {
-            const headerSpace = kintone.app.record.getHeaderMenuSpaceElement();
-
-            const messageDiv = document.createElement("div");
-            messageDiv.innerText = PLUGIN_NAME + "の設定を行ってください。";
-
-            messageDiv.style.textAlign = "center";
-            messageDiv.style.color = "red";
-            messageDiv.style.padding = "1.5em 0";
-
-            headerSpace.appendChild(messageDiv);
-        }
-
-        return event;
-    });
-
+    } catch (e) {
+        console.error(`${PLUGIN_NAME} error:`, e);
+    }
 
 })(kintone.$PLUGIN_ID);

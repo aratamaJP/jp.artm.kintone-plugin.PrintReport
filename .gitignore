@@ -2,8 +2,9 @@ node_modules/
 dist/
 
 # build directory
-plugin/*/*.js
-plugin/*/*.js.map
+plugin/js/*.js
+plugin/js/*.txt
+plugin/js/*.map
 
 # secret
 secret/*.ppk

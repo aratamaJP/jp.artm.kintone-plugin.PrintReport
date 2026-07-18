@@ -26,7 +26,8 @@
   "include": [
     "src/**/*.ts",
     "src/**/*.tsx",
-    "src/**/*.vue"
+    "src/**/*.vue",
+    "src/vue-shim.d.ts"
   ],
   "exclude": [
     "node_modules"

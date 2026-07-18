@@ -1,4 +1,4 @@
-export async function pluginSetConfigAsync(configObj) {
+export async function pluginSetConfigAsync(configObj: { [key: string]: any }) {
 
     return new kintone.Promise((resolve, reject) => {
 
@@ -10,7 +10,7 @@ export async function pluginSetConfigAsync(configObj) {
             kintone.plugin.app.setConfig({config : jsonPrefs}, function() {
                 resolve();
             });
-        } catch(e) {
+        } catch(e: any) {
             reject(e.message);
         }
     });

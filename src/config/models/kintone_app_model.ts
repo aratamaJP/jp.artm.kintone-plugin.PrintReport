@@ -8,7 +8,7 @@
  * @param {*} appId
  * @returns
  */
-export async function getAppInfoAsync(restApiClient, appId) {
+export async function getAppInfoAsync(restApiClient: any, appId: any) {
 
     return await restApiClient.app.getApp({
         id: appId
@@ -22,7 +22,7 @@ export async function getAppInfoAsync(restApiClient, appId) {
  * @param {*} preview true - デプロイ前のプレビュー情報を取得
  * @returns
  */
- export async function getAppFormFields(restApiClient, appId, preview = false) {
+ export async function getAppFormFields(restApiClient: any, appId: any, preview = false) {
 
     const rslt =  await restApiClient.app.getFormFields({
         app : appId,
@@ -41,7 +41,7 @@ export async function getAppInfoAsync(restApiClient, appId) {
  * @param {*} properties
  * @returns
  */
-export async function addAppFormFields(restApiClient, appId, properties) {
+export async function addAppFormFields(restApiClient: any, appId: any, properties: any) {
 
     const rslt =  await restApiClient.app.addFormFields({
       app : appId,
@@ -58,9 +58,9 @@ export async function addAppFormFields(restApiClient, appId, properties) {
  * @param {*} appIds
  * @returns
  */
-export async function deployAppsAsync(restApiClient, appIds) {
+export async function deployAppsAsync(restApiClient: any, appIds: any) {
 
-    const apps = appIds.map(appId => {
+    const apps = appIds.map((appId: any) => {
         return { app : appId }
     });
 
@@ -77,7 +77,7 @@ export async function deployAppsAsync(restApiClient, appIds) {
  * @param {*} appId
  * @returns
  */
-export async function getCustomizeViewsAsync(restApiClient, appId) {
+export async function getCustomizeViewsAsync(restApiClient: any, appId: any) {
 
     const views = [];
 

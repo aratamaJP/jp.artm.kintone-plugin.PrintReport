@@ -1,6 +1,6 @@
 import { KintoneRestAPIClient } from "@kintone/rest-api-client";
 import { getThisAppId } from '@/common/kintone/KintoneJsapiWrapper';
-import { getAppInfoAsync, getAppFormFields, addAppFormFields, deployAppsAsync, getCustomizeViewsAsync } from '@/config/models/kintone_app_model';
+import { deployAppsAsync } from '@/config/models/kintone_app_model';
 import { pluginSetConfigAsync } from '@/config/models/preference_model';
 
 import { CONFIG_KEYS } from "@/common/const/ConfigKeys";
@@ -29,7 +29,7 @@ export const Ctrl = {
      * @param {*} appId
      * @returns
      */
-    getAppNameAsync : async function(appId) {
+    getAppNameAsync : async function(appId: any) {
         // const appInfo = await getAppInfoAsync(this.restApiClient, appId);
         // return appInfo.name;
     },
@@ -62,7 +62,7 @@ export const Ctrl = {
      * カード表示に使用できるフィールド一覧の取得
      * @returns
      */
-    getFieldsForCardAsync : async function(formFields) {
+    getFieldsForCardAsync : async function(formFields: any) {
 
         // const fields = [];
 
@@ -127,7 +127,7 @@ export const Ctrl = {
      *
      * @returns
      */
-    getNotExistsFieldsOfGrpMngApp : async function(appIdGrpMng) {
+    getNotExistsFieldsOfGrpMngApp : async function(appIdGrpMng: any) {
 
         // const fieldCodes = [
         //     FCD_KANBAN_GROUP_MNG.KANBAN_APP_ID,
@@ -150,7 +150,7 @@ export const Ctrl = {
      * @param {*} fields
      * @returns
      */
-     sortFields : function(fields) {
+     sortFields : function(fields: any) {
         // return fields.sort(function(first, second){
         //     if (first.label > second.label){
         //         return 1;
@@ -168,7 +168,7 @@ export const Ctrl = {
      * @param {*} groupMngAppId
      * @param {*} nexFiedlsGrpMng
      */
-    addFields : async function(nexFiedlsThisApp, groupMngAppId, nexFiedlsGrpMng) {
+    addFields : async function(nexFiedlsThisApp: any, groupMngAppId: any, nexFiedlsGrpMng: any) {
 
         // // 自アプリに必要なフィールドを追加
         // const deployAppIds = [];
@@ -195,7 +195,7 @@ export const Ctrl = {
      * 自アプリに必要なフィールドを追加
      * @param {*} nexFiedlsThisApp
      */
-    addFieldsOfThisAppAsync : async function(nexFiedlsThisApp) {
+    addFieldsOfThisAppAsync : async function(nexFiedlsThisApp: any) {
         // const propertiese = {};
 
         // if(nexFiedlsThisApp.includes(FCD_KANBAN_ITEMS.ITEM_ID)) {
@@ -245,7 +245,7 @@ export const Ctrl = {
      * グループ管理に必要なフィールドを追加
      * @param {*} nexFiedlsGrpMng
      */
-    addFieldsOfGrpMngAsync : async function(appIdGrpMng, nexFiedlsGrpMng) {
+    addFieldsOfGrpMngAsync : async function(appIdGrpMng: any, nexFiedlsGrpMng: any) {
 
         // const propertiese = {};
 
@@ -284,7 +284,7 @@ export const Ctrl = {
     /**
      * 設定値を保存する
      */
-    saveConfigAsync : async function(fcodeParentTable, fcodeChildTable, fcodeParentTableUniqueKey, fcodeChildTableParentKey) {
+    saveConfigAsync : async function(fcodeParentTable: any, fcodeChildTable: any, fcodeParentTableUniqueKey: any, fcodeChildTableParentKey: any) {
 
         // debug
         fcodeParentTable = "大項目テーブル";
