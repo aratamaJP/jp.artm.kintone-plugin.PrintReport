@@ -1,0 +1,36 @@
+#report-header {
+    display: flex;
+    width: 100%;
+}
+
+#report-header > ul {
+    flex: 1;
+}
+
+#report-header > #ul-company-info {
+    font-size: 0.9em;
+    max-width: 14em;
+}
+
+#ul-taxrate-summary {
+    display: table;
+    padding: 0;
+    text-align: right;
+    margin: 1.3em 0 0.5em auto;
+    border-collapse: collapse;
+}
+
+#ul-taxrate-summary > li {
+    display: table-row;
+}
+
+#ul-taxrate-summary > li > div {
+    display: table-cell;
+    border: solid 1px black;
+    padding: 0.1em 0.5em;
+    min-width: 5em;
+}
+
+#ul-taxrate-summary > li:first-child > div {
+    text-align: center;
+}

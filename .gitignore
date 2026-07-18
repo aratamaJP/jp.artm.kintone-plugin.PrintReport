@@ -1,0 +1,11 @@
+node_modules/
+dist/
+
+# build directory
+plugin/*/*.js
+plugin/*/*.js.map
+
+# secret
+secret/*.ppk
+
+upload_env.ps1

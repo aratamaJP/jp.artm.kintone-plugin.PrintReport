@@ -1,0 +1,25 @@
+.like_default_button,
+.like_not_default_button {
+    border: 1px solid #e3e7e8;
+    min-width: 150px;
+    height: 48px;
+    margin: 8px 0;
+    cursor: pointer;
+}
+
+.like_default_button:hover,
+.like_not_default_button:hover {
+    opacity: 0.7;
+}
+
+.like_default_button  {
+    background-color: #3498db;
+    box-shadow: 1px 1px 1px #8ccbee inset;
+    color: #fff;
+}
+
+.like_not_default_button {
+    background-color: #f7f9fa;
+    box-shadow: 1px 1px 1px #fff inset;
+    color: #3498db;    
+}

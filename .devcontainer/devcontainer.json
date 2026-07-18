@@ -1,0 +1,27 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/typescript-node
+{
+	"name": "Node.js & TypeScript",
+	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
+	"image": "mcr.microsoft.com/devcontainers/typescript-node:4-24-trixie",
+
+	"containerEnv": {
+		// Geminiにワークスペースのフォルダが信頼できるものであることを伝える環境変数
+		"GEMINI_CLI_TRUST_WORKSPACE": "true"
+	},
+
+	"customizations": {
+		"vscode": {
+			// コンテナ起動時に自動インストールするVSCode拡張機能を指定
+			"extensions": [
+				// Gemini拡張機能
+				"google.geminicodeassist"
+			],
+			"settings": {
+				// Geminiの Agentにすべてのアクションを許可する設定
+				"geminicodeassist.agentYoloMode": true
+			}
+		}
+	}
+
+}

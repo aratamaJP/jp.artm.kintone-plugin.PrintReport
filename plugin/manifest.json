@@ -1,0 +1,25 @@
+{
+    "manifest_version": 1,
+    "version": 1,
+    "type": "APP",
+    "name": {
+        "ja": "帳票印刷プラグイン",
+        "en": "Hierarchy Table Plug-in"
+    },
+    "description": {
+        "ja": "レコードの値を使って、帳票を印刷するプラグインです。",
+        "en": ""
+    },
+    "icon": "image/icon.png",
+    "desktop": {
+        "js": [
+            "js/desktop.js"
+        ]
+    },
+    "config": {
+        "html": "html/config.html",
+        "js": [
+          "js/config.js"
+        ]
+    }
+}
