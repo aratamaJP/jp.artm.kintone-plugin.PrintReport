@@ -95,12 +95,16 @@
 
 <script lang="ts">
 import { defineComponent, ref, onMounted, computed } from "vue";
+
 import AlertDialog from "@/common/vue/components/alert_dialog.vue";
 import KintoneUiButton from "@/common/vue/components/kintone_ui_button.vue";
 import KintoneUiText from "@/common/vue/components/kintone_ui_text.vue";
-import { pluginSetConfigAsync } from "@/models/ConfigModel";
-import { imgDelete } from "@/common/const/PictureBase64";
+
 import { getThisAppId } from "@/common/kintone/KintoneJsapiWrapper";
+import { imgDelete } from "@/common/const/PictureBase64";
+
+import { pluginSetConfigAsync } from "@/models/ConfigModel";
+import { ConfigCtrl } from "@/controllers/ConfigCtrl"
 
 interface Report {
   name: string;

@@ -16,7 +16,7 @@ import { CONFIG_KEYS } from "@/common/const/ConfigKeys";
 //     FCD_KANBAN_ITEMS.ITEM_ID_NEXT,
 // ];
 
-export const Ctrl = {
+export const ConfigCtrl = {
 
     appId : getThisAppId(),
     restApiClient : new KintoneRestAPIClient(),
