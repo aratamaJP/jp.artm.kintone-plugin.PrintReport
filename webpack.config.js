@@ -1,5 +1,6 @@
 /* eslint-env node */
 const path = require("path");
+const { VueLoaderPlugin } = require("vue-loader");
 const KintonePlugin = require("@kintone/webpack-plugin-kintone-plugin");
 
 const isProduction = process.env.NODE_ENV === "production";
@@ -17,32 +18,33 @@ module.exports = {
     filename: "[name].js",
   },
   resolve: {
-    extensions: [".ts", ".tsx", ".js"],
+    extensions: [".ts", ".js", ".vue"],
+    alias: {
+      "@": path.resolve(__dirname, "src"),
+    },
   },
   module: {
     rules: [
       {
-        test: /\.[t|j]sx?$/,
-        loader: "babel-loader",
+        test: /\.tsx?$/,
+        loader: "ts-loader",
         exclude: /node_modules/,
         options: {
-          presets: [
-            [
-              "@babel/preset-env",
-              {
-                useBuiltIns: "usage",
-                corejs: 3,
-                modules: false,
-              },
-            ],
-            "@babel/preset-typescript",
-            "@babel/preset-react",
-          ],
+          appendTsSuffixTo: [/\.vue$/],
         },
+      },
+      {
+        test: /\.vue$/,
+        loader: "vue-loader",
+      },
+      {
+        test: /\.css$/,
+        use: ["vue-style-loader", "css-loader"],
       },
     ],
   },
   plugins: [
+    new VueLoaderPlugin(),
     new KintonePlugin({
       manifestJSONPath: "./manifest.json",
       privateKeyPath: "./private.ppk",

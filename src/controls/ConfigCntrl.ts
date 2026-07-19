@@ -1,7 +1,7 @@
 import { KintoneRestAPIClient } from "@kintone/rest-api-client";
 import { getThisAppId } from '@/common/kintone/KintoneJsapiWrapper';
-import { deployAppsAsync } from '@/config/models/kintone_app_model';
-import { pluginSetConfigAsync } from '@/config/models/preference_model';
+import { deployAppsAsync } from '@/models/kintone_app_model';
+import { pluginSetConfigAsync } from '@/models/ConfigModel';
 
 import { CONFIG_KEYS } from "@/common/const/ConfigKeys";
 // // import { FCD_COMMON } from "@/common/const/fcd_common"

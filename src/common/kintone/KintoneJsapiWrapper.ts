@@ -3,7 +3,7 @@
  * @param {string} pluginId
  * @returns
  */
-export function getPluginConfig(pluginId: string) {
+export function getPluginConfig(pluginId:string) {
 
     return kintone.plugin.app.getConfig(pluginId);
 

@@ -1,9 +1,29 @@
 // You can use the ESModules syntax and @kintone/rest-api-client without additional settings.
 // import { KintoneRestAPIClient } from "@kintone/rest-api-client";
 
-// @ts-expect-error
-const PLUGIN_ID = kintone.$PLUGIN_ID;
+import { createApp } from "vue";
+import { getPluginConfig } from "@/common/kintone/KintoneJsapiWrapper";
+import ConfigView from "@/views/config.vue";
 
+const PLUGIN_ID = kintone.$PLUGIN_ID;
+const TARGET_ELEMENT_ID = "div-config-root";
+
+// Kintone プラグイン設定 読み込み
+let config;
+const configStore = getPluginConfig(PLUGIN_ID);
+if (configStore.config) {
+  config = JSON.parse(configStore.config);
+}
+
+createApp(
+  ConfigView,
+  {
+    config
+  }
+).mount('#' + TARGET_ELEMENT_ID);
+
+
+/*
 const form = document.querySelector(".js-submit-settings");
 const cancelButton = document.querySelector(".js-cancel-button");
 const messageInput =
@@ -27,3 +47,4 @@ form.addEventListener("submit", (e) => {
 cancelButton.addEventListener("click", () => {
   window.location.href = "../../" + kintone.app.getId() + "/plugin/";
 });
+*/

@@ -4,7 +4,7 @@
   "scripts": {
     "build:dev": "cross-env NODE_ENV=development webpack",
     "build:prod": "cross-env NODE_ENV=production webpack",
-    "upload": "dotenv -- cli-kintone plugin upload --input dist/plugin.zip",
+    "upload": "dotenv -- cli-kintone plugin upload --input dist/plugin.zip --yes",
     "build-upload": "run-s build:dev upload",
     "dts-gen": "kintone-dts-gen",
     "lint": "eslint src"
@@ -18,19 +18,27 @@
     "@kintone/cli": "1.21.0",
     "@kintone/dts-gen": "9.0.8",
     "@kintone/webpack-plugin-kintone-plugin": "9.0.4",
+    "@vue/compiler-sfc": "^3.5.40",
     "ajv": "8.20.0",
     "babel-loader": "9.2.1",
     "cross-env": "7.0.3",
+    "css-loader": "^7.1.4",
     "dotenv-cli": "^11.0.0",
     "eslint": "9.39.5",
     "npm-run-all": "4.1.5",
     "prettier": "3.8.5",
+    "style-loader": "^4.0.0",
+    "ts-loader": "^9.6.2",
     "typescript": "5.9.3",
+    "vue-loader": "^17.4.2",
+    "vue-style-loader": "^4.1.3",
+    "vue-template-compiler": "^2.7.16",
     "webpack": "5.108.4",
     "webpack-cli": "6.0.1"
   },
   "dependencies": {
     "@kintone/rest-api-client": "6.2.1",
-    "core-js": "3.40.0"
+    "core-js": "3.40.0",
+    "vue": "^3.5.40"
   }
 }
