@@ -5,7 +5,7 @@
       <div class="report-list-section">
         <h2>帳票一覧</h2>
         <div class="report-list-toolbar">
-          <KintoneUiButton text="追加" @callback-on-click="addReport" />
+          <KintoneUiButton text="追加" @callback-on-click="openTemplateDialog" />
         </div>
         <ul class="report-list">
           <li
@@ -77,19 +77,34 @@
         @callback-on-click="cancel"
       />
       <KintoneUiButton
-        text="OK"
-        type="submit"
+        text="保存"
+        :is-submit="true"
         @callback-on-click="saveOnClick"
       />
     </section>
 
     <AlertDialog
-      v-show="alertDlgVisible"
+      v-if="alertDlgVisible"
       :title="alertTitle"
       :message="alertMessage"
-      ok-text="OK"
       @close="closeAlertDlg"
     />
+
+    <ModalDialog v-if="showTemplateDialog">
+      <template #header>
+        <h4>テンプレート選択</h4>
+      </template>
+      <template #body>
+        <div class="template-buttons">
+          <KintoneUiButton text="請求書Ａ" @callback-on-click="addReportFromTemplate('invoice')" />
+          <KintoneUiButton text="見積書Ａ" @callback-on-click="addReportFromTemplate('quotation')" />
+          <KintoneUiButton text="フリーHTML" @callback-on-click="addReportFromTemplate('freehtml')" />
+        </div>
+      </template>
+      <template #footer>
+        <KintoneUiButton text="キャンセル" @callback-on-click="closeTemplateDialog" />
+      </template>
+    </ModalDialog>
   </div>
 </template>
 
@@ -99,12 +114,10 @@ import { defineComponent, ref, onMounted, computed } from "vue";
 import AlertDialog from "@/common/vue/components/alert_dialog.vue";
 import KintoneUiButton from "@/common/vue/components/kintone_ui_button.vue";
 import KintoneUiText from "@/common/vue/components/kintone_ui_text.vue";
+import ModalDialog from "@/common/vue/components/modal_dialog.vue";
 
-import { getThisAppId } from "@/common/kintone/KintoneJsapiWrapper";
 import { imgDelete } from "@/common/const/PictureBase64";
-
 import { pluginSetConfigAsync } from "@/models/ConfigModel";
-import { ConfigCtrl } from "@/controllers/ConfigCtrl"
 
 interface Report {
   name: string;
@@ -112,12 +125,31 @@ interface Report {
   enabled: boolean;
 }
 
+const TEMPLATES = {
+  invoice: {
+    name: "請求書A",
+    html: `<h1>請求書</h1>
+<p>請求書番号: {{record.id.value}}</p>`,
+  },
+  quotation: {
+    name: "見積書A",
+    html: `<h1>見積書</h1>
+<p>見積書番号: {{record.id.value}}</p>`,
+  },
+  freehtml: {
+    name: "新しい帳票",
+    html: "<div>Hello, World!</div>",
+  },
+};
+
+
 export default defineComponent({
-  name: "PreferenceView",
+  name: "ConfigView",
   components: {
     KintoneUiButton,
     KintoneUiText,
     AlertDialog,
+    ModalDialog,
   },
   props: ["config"],
   setup(props) {
@@ -127,6 +159,8 @@ export default defineComponent({
     const alertDlgVisible = ref(false);
     const alertTitle = ref("");
     const alertMessage = ref("");
+
+    const showTemplateDialog = ref(false);
 
     const selectedReport = computed(() => {
       if (selectedReportIndex.value !== null) {
@@ -146,15 +180,26 @@ export default defineComponent({
 
     onMounted(loadConfig);
 
-    const addReport = () => {
+    const openTemplateDialog = () => {
+      showTemplateDialog.value = true;
+    };
+
+    const closeTemplateDialog = () => {
+      showTemplateDialog.value = false;
+    };
+
+    const addReportFromTemplate = (templateType: 'invoice' | 'quotation' | 'freehtml') => {
+      const template = TEMPLATES[templateType];
       const newReport: Report = {
-        name: `新しい帳票 ${reports.value.length + 1}`,
-        html: "<div>Hello, World!</div>",
+        name: `${template.name} ${reports.value.length + 1}`,
+        html: template.html,
         enabled: true,
       };
       reports.value.push(newReport);
       selectedReportIndex.value = reports.value.length - 1;
+      closeTemplateDialog();
     };
+
 
     const deleteReport = (index: number) => {
       reports.value.splice(index, 1);
@@ -204,7 +249,6 @@ export default defineComponent({
       reports,
       selectedReportIndex,
       selectedReport,
-      addReport,
       deleteReport,
       selectReport,
       updateSelectedReportName,
@@ -215,6 +259,10 @@ export default defineComponent({
       alertTitle,
       alertMessage,
       closeAlertDlg,
+      showTemplateDialog,
+      openTemplateDialog,
+      closeTemplateDialog,
+      addReportFromTemplate,
     };
   },
 });
@@ -291,5 +339,10 @@ export default defineComponent({
     align-items: center;
     height: 100%;
     color: #999;
+}
+.template-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
 }
 </style>
