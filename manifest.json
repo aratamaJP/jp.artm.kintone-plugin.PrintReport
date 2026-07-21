@@ -22,7 +22,6 @@
       "plugin/css/config.css"
     ],
     "required_params": [
-      "message"
     ]
   },
   "name": {
@@ -31,7 +30,7 @@
   },
   "description": {
     "en": "Aratama Print Reports Plugin",
-    "ja": "Aratama Print Reports Plugin"
+    "ja": "レコードの値を使って、帳票を印刷するプラグインです。"
   },
   "mobile": {
     "js": [

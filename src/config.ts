@@ -3,7 +3,7 @@
 
 import { createApp } from "vue";
 import { getPluginConfig } from "@/common/kintone/KintoneJsapiWrapper";
-import ConfigView from "@/views/config.vue";
+import ConfigView from "@/views/Config.vue";
 
 const PLUGIN_ID = kintone.$PLUGIN_ID;
 const TARGET_ELEMENT_ID = "div-config-root";

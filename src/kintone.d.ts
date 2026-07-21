@@ -14,6 +14,9 @@ declare namespace kintone {
     }
     const $PLUGIN_ID: string;
 
+    function isMobileApp(): boolean;
+    function isMobilePage(): boolean;
+
     namespace app {
         function getId(): number | null;
         namespace record {
