@@ -7,33 +7,6 @@ interface Report {
 
 export class DesktopCtrl {
 
-  private report: Report;
-  private printButtonId: string;
-
-  constructor(report: Report, index: number) {
-    this.report = report;
-    this.printButtonId = `print-btn-${index}`;
-  }
-
-  public onDetailShow(event: any): void {
-    const headerSpace = kintone.app.record.getHeaderMenuSpaceElement();
-    if (!headerSpace || document.getElementById(this.printButtonId)) {
-      return;
-    }
-
-    // 印刷ボタン
-    const printButton = document.createElement("button");
-    printButton.id = this.printButtonId;
-    printButton.innerText = this.report.name;
-    printButton.classList.add("kintoneplugin-button-normal");
-    printButton.onclick = () => {
-      const renderedHtml = DesktopCtrl.renderTemplate(this.report.html, event.record);
-      DesktopCtrl.print(renderedHtml);
-    }
-
-    headerSpace.appendChild(printButton);
-  }
-
   public static print(html: string): void {
     const printContent = html;
     if (!printContent) {
@@ -57,7 +30,7 @@ export class DesktopCtrl {
     // {{field_code}} の置換
     renderedHtml = renderedHtml.replace(/\{\{([^}]+)\}\}/g, (match, fieldCode) => {
       if (record[fieldCode] && record[fieldCode].value) {
-        return this.escapeHtml(record[fieldCode].value);
+        return DesktopCtrl.escapeHtml(record[fieldCode].value);
       }
       return match; // 一致するフィールドがない場合はそのまま
     });
@@ -70,7 +43,7 @@ export class DesktopCtrl {
                 let rowHtml = innerHtml;
                 for (const fieldCode in row.value) {
                     const regex = new RegExp(`\{\{${fieldCode}\}\}`, 'g');
-                    rowHtml = rowHtml.replace(regex, this.escapeHtml(row.value[fieldCode].value));
+                    rowHtml = rowHtml.replace(regex, DesktopCtrl.escapeHtml(row.value[fieldCode].value));
                 }
                 tableRows += rowHtml;
             });
