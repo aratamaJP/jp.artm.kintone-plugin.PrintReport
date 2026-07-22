@@ -4,41 +4,39 @@ import { deployAppsAsync } from '@/models/kintone_app_model';
 import { pluginSetConfigAsync } from '@/models/ConfigModel';
 
 import { CONFIG_KEYS } from "@/common/const/ConfigKeys";
-// // import { FCD_COMMON } from "@/common/const/fcd_common"
-// import { FCD_KANBAN_ITEMS } from "@/common/const/fcd_kanban_items";
-// import { FCD_KANBAN_GROUP_MNG } from "@/common/const/fcd_kanban_group_mng";
-// import { CONFIG_KEYS } from "@/common/const/config_keys";
 
-// const REQUIRED_FIELD_CODES = [
-//     FCD_KANBAN_ITEMS.ITEM_ID,
-//     FCD_KANBAN_ITEMS.ITEM_GROUP_NAME,
-//     FCD_KANBAN_ITEMS.ITEM_ID_PREV,
-//     FCD_KANBAN_ITEMS.ITEM_ID_NEXT,
-// ];
+export class ConfigCtrl {
 
-export const ConfigCtrl = {
-
-    appId : getThisAppId(),
-    restApiClient : new KintoneRestAPIClient(),
+    private readonly appId: number;
+    private readonly restApiClient: KintoneRestAPIClient;
 
     // 設定保存後に自動でデプロイするかどうか
-    autoDeploy : true,
+    public autoDeploy: boolean = true;
+
+    constructor() {
+        const appId = getThisAppId();
+        if (appId === null) {
+            throw new Error("kintone App ID could not be retrieved.");
+        }
+        this.appId = appId;
+        this.restApiClient = new KintoneRestAPIClient();
+    }
 
     /**
      * アプリ名の取得
      * @param {*} appId
      * @returns
      */
-    getAppNameAsync : async function(appId: any) {
+    public async getAppNameAsync(appId: any) {
         // const appInfo = await getAppInfoAsync(this.restApiClient, appId);
         // return appInfo.name;
-    },
+    }
 
     /**
      * カスタマイズビューの一覧を取得
      * @returns
      */
-    getCustomizeViewsAsync : async function() {
+    public async getCustomizeViewsAsync() {
 
         // const searchRslt = await getCustomizeViewsAsync(this.restApiClient, this.appId);
 
@@ -48,21 +46,21 @@ export const ConfigCtrl = {
         // });
 
         // return views;
-    },
+    }
 
     /**
      *
      * @returns
      */
-     getAppFormFieldsAsync : async function() {
+     public async getAppFormFieldsAsync() {
         // return await getAppFormFields(this.restApiClient, this.appId);
-    },
+    }
 
     /**
      * カード表示に使用できるフィールド一覧の取得
      * @returns
      */
-    getFieldsForCardAsync : async function(formFields: any) {
+    public async getFieldsForCardAsync(formFields: any) {
 
         // const fields = [];
 
@@ -104,13 +102,13 @@ export const ConfigCtrl = {
         // }
 
         // return this.sortFields(fields);
-    },
+    }
 
     /**
      * 自アプリに追加が必要なフィールドを取得
      * @returns
      */
-    getNotExistsFieldsOfThisApp : async function() {
+    public async getNotExistsFieldsOfThisApp() {
 
         // const formFields = await getAppFormFields(this.restApiClient, this.appId, true); // テスト環境のフィールドを取得
         // const formFieldCodes = Object.keys(formFields).map(function (key) { return formFields[key].code; });
@@ -121,13 +119,13 @@ export const ConfigCtrl = {
 
         // return rslt;
 
-    },
+    }
 
     /**
      *
      * @returns
      */
-    getNotExistsFieldsOfGrpMngApp : async function(appIdGrpMng: any) {
+    public async getNotExistsFieldsOfGrpMngApp(appIdGrpMng: any) {
 
         // const fieldCodes = [
         //     FCD_KANBAN_GROUP_MNG.KANBAN_APP_ID,
@@ -143,14 +141,14 @@ export const ConfigCtrl = {
 
         // return rslt;
 
-    },
+    }
 
     /**
      *
      * @param {*} fields
      * @returns
      */
-     sortFields : function(fields: any) {
+     public sortFields(fields: any) {
         // return fields.sort(function(first, second){
         //     if (first.label > second.label){
         //         return 1;
@@ -160,7 +158,7 @@ export const ConfigCtrl = {
         //         return 0;
         //     }
         // });
-    },
+    }
 
     /**
      * 動作に必要なフィールドを追加する
@@ -168,7 +166,7 @@ export const ConfigCtrl = {
      * @param {*} groupMngAppId
      * @param {*} nexFiedlsGrpMng
      */
-    addFields : async function(nexFiedlsThisApp: any, groupMngAppId: any, nexFiedlsGrpMng: any) {
+    public async addFields(nexFiedlsThisApp: any, groupMngAppId: any, nexFiedlsGrpMng: any) {
 
         // // 自アプリに必要なフィールドを追加
         // const deployAppIds = [];
@@ -189,13 +187,13 @@ export const ConfigCtrl = {
         // if (deployAppIds.length > 0) {
         //     await deployAppsAsync(this.restApiClient, deployAppIds);
         // }
-    },
+    }
 
     /**
      * 自アプリに必要なフィールドを追加
      * @param {*} nexFiedlsThisApp
      */
-    addFieldsOfThisAppAsync : async function(nexFiedlsThisApp: any) {
+    public async addFieldsOfThisAppAsync(nexFiedlsThisApp: any) {
         // const propertiese = {};
 
         // if(nexFiedlsThisApp.includes(FCD_KANBAN_ITEMS.ITEM_ID)) {
@@ -239,13 +237,13 @@ export const ConfigCtrl = {
 
         // return await addAppFormFields(this.restApiClient, this.appId, propertiese);
 
-    },
+    }
 
     /**
      * グループ管理に必要なフィールドを追加
      * @param {*} nexFiedlsGrpMng
      */
-    addFieldsOfGrpMngAsync : async function(appIdGrpMng: any, nexFiedlsGrpMng: any) {
+    public async addFieldsOfGrpMngAsync(appIdGrpMng: any, nexFiedlsGrpMng: any) {
 
         // const propertiese = {};
 
@@ -278,29 +276,19 @@ export const ConfigCtrl = {
 
         // return await addAppFormFields(this.restApiClient, appIdGrpMng, propertiese);
 
-    },
+    }
 
 
     /**
      * 設定値を保存する
      */
-    saveConfigAsync : async function(fcodeParentTable: any, fcodeChildTable: any, fcodeParentTableUniqueKey: any, fcodeChildTableParentKey: any) {
-
-        // debug
-        fcodeParentTable = "大項目テーブル";
-        fcodeChildTable = "明細テーブル";
-        fcodeParentTableUniqueKey = "大項目ID";
-        fcodeChildTableParentKey = "親大項目ID";
-
+    public async saveConfigAsync(reports: any[]) {
         await pluginSetConfigAsync({
-            [CONFIG_KEYS.FCODE_PARENT_TABLE] : fcodeParentTable,
-            [CONFIG_KEYS.FCODE_CHILD_TABLE] : fcodeChildTable,
-            [CONFIG_KEYS.FCODE_PARENT_TABLE_UNIQUE_KEY] : fcodeParentTableUniqueKey,
-            [CONFIG_KEYS.FCODE_CHILD_TABLE_PARENT_KEY] : fcodeChildTableParentKey,
+            [CONFIG_KEYS.REPORTS] : JSON.stringify(reports),
         });
 
         if (this.autoDeploy) {
             await deployAppsAsync(this.restApiClient, [ this.appId ]);
         }
-    },
-};
+    }
+}

@@ -1,4 +1,5 @@
 export const CONFIG_KEYS = {
+    REPORTS: "reports",
     FCODE_PARENT_TABLE : "fcodeParentTable",
     FCODE_CHILD_TABLE : "fcodeChildTable",
     FCODE_PARENT_TABLE_UNIQUE_KEY : "fcodeParentTableUniqueKey",

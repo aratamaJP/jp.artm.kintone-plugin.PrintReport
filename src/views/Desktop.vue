@@ -33,6 +33,8 @@
 <script lang="ts">
 import { defineComponent, ref, onMounted, computed } from "vue";
 
+import { DesktopCtrl } from "@/controllers/DesktopCtrl";
+
 import AlertDialog from "@/common/vue/components/alert_dialog.vue";
 import KintoneUiButton from "@/common/vue/components/kintone_ui_button.vue";
 import KintoneUiDropdown from "@/common/vue/components/kintone_ui_dropdown.vue";
@@ -101,8 +103,21 @@ export default defineComponent({
     };
 
     const printReport = () => {
-      console.log("Printing report:", selectedReportName.value);
-      // ここに印刷処理を実装します
+      const report = reports.value.find(r => r.name === selectedReportName.value);
+      if (!report) {
+        showAlertDlg("エラー", "選択された帳票が見つかりません。");
+        return;
+      }
+
+      const record = kintone.app.record.get();
+      if (!record) {
+        showAlertDlg("エラー", "レコードデータが取得できません。");
+        return;
+      }
+
+      const renderedHtml = DesktopCtrl.renderTemplate(report.html, record.record);
+      DesktopCtrl.print(renderedHtml);
+
       closePrintDialog();
     };
 

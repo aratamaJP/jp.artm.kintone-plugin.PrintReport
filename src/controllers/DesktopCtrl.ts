@@ -5,15 +5,14 @@ interface Report {
   enabled: boolean;
 }
 
-export class PrintReport {
+export class DesktopCtrl {
+
   private report: Report;
   private printButtonId: string;
-  private printDataId: string;
 
   constructor(report: Report, index: number) {
     this.report = report;
     this.printButtonId = `print-btn-${index}`;
-    this.printDataId = `print-data-${index}`;
   }
 
   public onDetailShow(event: any): void {
@@ -27,25 +26,21 @@ export class PrintReport {
     printButton.id = this.printButtonId;
     printButton.innerText = this.report.name;
     printButton.classList.add("kintoneplugin-button-normal");
-    printButton.onclick = () => this.print();
-    
-    headerSpace.appendChild(printButton);
+    printButton.onclick = () => {
+      const renderedHtml = DesktopCtrl.renderTemplate(this.report.html, event.record);
+      DesktopCtrl.print(renderedHtml);
+    }
 
-    // 印刷用データ領域
-    const printDataContainer = document.createElement("div");
-    printDataContainer.id = this.printDataId;
-    printDataContainer.style.display = "none";
-    printDataContainer.innerHTML = this.renderTemplate(this.report.html, event.record);
-    headerSpace.appendChild(printDataContainer);
+    headerSpace.appendChild(printButton);
   }
 
-  private print(): void {
-    const printContent = document.getElementById(this.printDataId)?.innerHTML;
+  public static print(html: string): void {
+    const printContent = html;
     if (!printContent) {
       alert("印刷する内容がありません。");
       return;
     }
-    
+
     const printWindow = window.open("", "_blank");
     if (printWindow) {
       printWindow.document.write(printContent);
@@ -56,7 +51,7 @@ export class PrintReport {
     }
   }
 
-  private renderTemplate(template: string, record: any): string {
+  public static renderTemplate(template: string, record: any): string {
     let renderedHtml = template;
 
     // {{field_code}} の置換
@@ -66,7 +61,7 @@ export class PrintReport {
       }
       return match; // 一致するフィールドがない場合はそのまま
     });
-    
+
     // {{#subtable_code}}...{{/subtable_code}} の置換
     renderedHtml = renderedHtml.replace(/\{\{#([^}]+)\}\}([\s\S]*?)\{\{\/\1\}\}/g, (match, tableCode, innerHtml) => {
         if (record[tableCode] && record[tableCode].value.length > 0) {
@@ -86,8 +81,8 @@ export class PrintReport {
 
     return renderedHtml;
   }
-  
-  private escapeHtml(str: any): string {
+
+  private static escapeHtml(str: any): string {
     if (typeof str !== 'string') {
         return String(str);
     }
