@@ -1,32 +1,24 @@
 <template>
-  <div ref="dropdownRef" class="kintoneplugin-dropdown-outer">
-    <div class="kintoneplugin-dropdown" @click="toggleDropdown">
-      <div class="kintoneplugin-dropdown-selected">
-        <span class="kintoneplugin-dropdown-selected-name">
-          {{ selectedLabel }}
-        </span>
-      </div>
-    </div>
-    <div v-show="isOpen" class="kintoneplugin-dropdown-list">
-      <div
+  <div class="kintoneplugin-dropdown-outer">
+    <select
+      class="kintone-select"
+      :value="value"
+      @change="handleChange"
+    >
+      <option
         v-for="option in normalizedOptions"
         :key="option.value"
-        class="kintoneplugin-dropdown-list-item"
-        :class="{
-          'kintoneplugin-dropdown-list-item-selected': option.value === value,
-        }"
-        @click="selectOption(option.value)"
+        :value="option.value"
       >
-        <span class="kintoneplugin-dropdown-list-item-name">
-          {{ option.label }}
-        </span>
-      </div>
-    </div>
+        {{ option.label }}
+      </option>
+    </select>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, computed, onMounted, onUnmounted } from "vue";
+import { defineComponent, computed } from "vue";
+import "../../css/like_default_button.css";
 
 interface DropdownOption {
   value: string;
@@ -47,9 +39,6 @@ export default defineComponent({
   },
   emits: ["callback-on-change"],
   setup(props, { emit }) {
-    const isOpen = ref(false);
-    const dropdownRef = ref<HTMLElement | null>(null);
-
     // Normalize options supporting both strings and custom objects
     const normalizedOptions = computed<DropdownOption[]>(() => {
       return props.options.map((option: any) => {
@@ -65,50 +54,14 @@ export default defineComponent({
       });
     });
 
-    const selectedLabel = computed(() => {
-      const found = normalizedOptions.value.find(
-        (opt) => opt.value === String(props.value)
-      );
-      return found ? found.label : "";
-    });
-
-    const toggleDropdown = () => {
-      isOpen.value = !isOpen.value;
+    const handleChange = (event: Event) => {
+      const target = event.target as HTMLSelectElement;
+      emit("callback-on-change", target.value);
     };
-
-    const closeDropdown = () => {
-      isOpen.value = false;
-    };
-
-    const selectOption = (selectedValue: string) => {
-      emit("callback-on-change", selectedValue);
-      closeDropdown();
-    };
-
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        dropdownRef.value &&
-        !dropdownRef.value.contains(event.target as Node)
-      ) {
-        closeDropdown();
-      }
-    };
-
-    onMounted(() => {
-      document.addEventListener("click", handleClickOutside);
-    });
-
-    onUnmounted(() => {
-      document.removeEventListener("click", handleClickOutside);
-    });
 
     return {
-      isOpen,
-      dropdownRef,
       normalizedOptions,
-      selectedLabel,
-      toggleDropdown,
-      selectOption,
+      handleChange,
     };
   },
 });
@@ -116,15 +69,7 @@ export default defineComponent({
 
 <style scoped>
 .kintoneplugin-dropdown-outer {
-  position: relative;
   display: inline-block;
-}
-
-.kintoneplugin-dropdown-list {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  z-index: 1000;
-  margin-top: 4px;
+  position: relative;
 }
 </style>

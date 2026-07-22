@@ -23,3 +23,36 @@
     box-shadow: 1px 1px 1px #fff inset;
     color: #3498db;    
 }
+
+.kintone-select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-color: #f7f9fa;
+    border: 1px solid #e3e7e8;
+    box-sizing: border-box;
+    cursor: pointer;
+    display: inline-block;
+    font-size: 14px;
+    height: 48px;
+    line-height: 1.5;
+    outline: 0;
+    padding: 0 32px 0 16px;
+    vertical-align: middle;
+    width: 100%;
+    min-width: 150px;
+}
+
+.kintoneplugin-dropdown-outer::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    right: 16px;
+    transform: translateY(-50%);
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 5px solid #3498db;
+    pointer-events: none;
+}
