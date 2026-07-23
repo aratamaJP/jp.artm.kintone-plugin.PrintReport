@@ -118,29 +118,13 @@ import ModalDialog from "@/common/vue/components/modal_dialog.vue";
 
 import { imgDelete } from "@/common/const/PictureBase64";
 import { pluginSetConfigAsync } from "@/models/ConfigModel";
+import { TEMPLATES } from "./templates";
 
 interface Report {
   name: string;
   html: string;
   enabled: boolean;
 }
-
-const TEMPLATES = {
-  invoice: {
-    name: "請求書A",
-    html: `<h1>請求書</h1>
-<p>請求書番号: {{record.id.value}}</p>`,
-  },
-  quotation: {
-    name: "見積書A",
-    html: `<h1>見積書</h1>
-<p>見積書番号: {{record.id.value}}</p>`,
-  },
-  freehtml: {
-    name: "新しい帳票",
-    html: "<div>Hello, World!</div>",
-  },
-};
 
 
 export default defineComponent({
