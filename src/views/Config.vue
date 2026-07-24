@@ -24,7 +24,14 @@
 
       <!-- Right: Report Editor -->
       <div class="report-editor-section" v-if="selectedReport">
-        <h2>帳票設定</h2>
+        <div class="report-editor-header">
+          <h2>帳票設定</h2>
+          <KintoneUiButton text="プレビュー" @callback-on-click="preview" />
+        </div>
+        <section>
+          <label>テンプレート</label>
+          <div class="template-name-display">{{ templateDefinition.name }}</div>
+        </section>
         <section>
           <label for="report-name" class="require-field">帳票名</label>
           <KintoneUiText
@@ -279,6 +286,21 @@ export default defineComponent({
       window.location.href = "./";
     };
 
+    const preview = () => {
+      if (!selectedReport.value) return;
+
+      const report = {
+        ...selectedReport.value,
+        template_params: JSON.stringify(templateParamsData.value),
+      };
+
+      localStorage.setItem("print-report-preview-mode", "true");
+      localStorage.setItem("print-report-preview-data", JSON.stringify(report));
+      
+      const message = "設定をプレビューします。レコード詳細画面を開いてください。";
+      showAlertDlg("プレビュー", message);
+    };
+
     return {
       reports,
       selectedReportIndex,
@@ -300,12 +322,29 @@ export default defineComponent({
       templateDefinition,
       templateParamsData,
       updateParam,
+      preview,
     };
   },
 });
 </script>
 
 <style scoped>
+.report-editor-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+.report-editor-header h2 {
+  margin-bottom: 0;
+}
+.template-name-display {
+  padding: 8px;
+  background-color: #f5f5f5;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  margin-bottom: 5px;
+}
 .container {
   display: flex;
   gap: 20px;
