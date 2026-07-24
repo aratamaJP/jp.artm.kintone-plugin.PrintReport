@@ -1,4 +1,5 @@
 export const freeHtmlTemplate = {
-  name: "新しい帳票",
+  name: "フリーHTML",
   html: "<div>Hello, World!</div>",
+  params: [{ name: "free-html", label: "フリーHTML", type: "text-area" }],
 };

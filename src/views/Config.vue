@@ -34,14 +34,27 @@
           />
         </section>
 
-        <section>
-          <label for="report-html">帳票HTML</label>
-          <textarea
-            id="report-html"
-            class="kintoneplugin-textarea"
-            v-model="selectedReport.html"
-          ></textarea>
-        </section>
+        <!-- Template Parameters Section -->
+        <div v-if="templateDefinition && templateDefinition.params" class="template-params-section">
+          <h3>テンプレート設定</h3>
+          <section v-for="param in templateDefinition.params" :key="param.name">
+            <label :for="`param-${param.name}`">{{ param.label }}</label>
+            <KintoneUiText
+              v-if="param.type === 'text'"
+              :id="`param-${param.name}`"
+              :value="templateParamsData[param.name]"
+              @callback-on-change="updateParam(param.name)"
+            />
+            <textarea
+              v-if="param.type === 'text-area'"
+              :id="`param-${param.name}`"
+              class="kintoneplugin-textarea"
+              v-model="templateParamsData[param.name]"
+            ></textarea>
+          </section>
+        </div>
+
+
 
         <section>
           <label>有効/無効</label>
@@ -109,7 +122,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, onMounted, computed } from "vue";
+import { defineComponent, ref, onMounted, computed, watch } from "vue";
 
 import AlertDialog from "@/common/vue/components/alert_dialog.vue";
 import KintoneUiButton from "@/common/vue/components/kintone_ui_button.vue";
@@ -124,6 +137,8 @@ interface Report {
   name: string;
   html: string;
   enabled: boolean;
+  template: keyof typeof TEMPLATES;
+  template_params: string; // JSON string
 }
 
 
@@ -153,6 +168,39 @@ export default defineComponent({
       return null;
     });
 
+    const templateDefinition = computed(() => {
+      if (selectedReport.value && selectedReport.value.template) {
+        return TEMPLATES[selectedReport.value.template];
+      }
+      return null;
+    });
+
+    const templateParamsData = ref<Record<string, string>>({});
+
+    const updateParam = (paramName: string) => (value: string) => {
+      templateParamsData.value[paramName] = value;
+    };
+
+    watch(selectedReport, (newReport) => {
+      if (newReport && newReport.template_params) {
+        try {
+          templateParamsData.value = JSON.parse(newReport.template_params);
+        } catch (e) {
+          console.error("Failed to parse template_params", e);
+          templateParamsData.value = {};
+        }
+      } else {
+        templateParamsData.value = {};
+      }
+    }, { immediate: true });
+
+    watch(templateParamsData, (newParams) => {
+      if (selectedReport.value) {
+        selectedReport.value.template_params = JSON.stringify(newParams);
+      }
+    }, { deep: true });
+
+
     const loadConfig = () => {
       if (props.config && props.config.reports) {
         reports.value = JSON.parse(props.config.reports);
@@ -178,6 +226,8 @@ export default defineComponent({
         name: `${template.name} ${reports.value.length + 1}`,
         html: template.html,
         enabled: true,
+        template: templateType,
+        template_params: '{}',
       };
       reports.value.push(newReport);
       selectedReportIndex.value = reports.value.length - 1;
@@ -247,6 +297,9 @@ export default defineComponent({
       openTemplateDialog,
       closeTemplateDialog,
       addReportFromTemplate,
+      templateDefinition,
+      templateParamsData,
+      updateParam,
     };
   },
 });
@@ -304,7 +357,7 @@ export default defineComponent({
 }
 .kintoneplugin-textarea {
   width: 100%;
-  height: 300px;
+  height: 150px;
   border: 1px solid #ccc;
   padding: 5px;
 }
@@ -328,5 +381,15 @@ export default defineComponent({
   display: flex;
   gap: 10px;
   justify-content: center;
+}
+.template-params-section {
+  border: 1px solid #eee;
+  padding: 15px;
+  margin-bottom: 20px;
+  border-radius: 5px;
+}
+.template-params-section h3 {
+  margin-top: 0;
+  margin-bottom: 15px;
 }
 </style>

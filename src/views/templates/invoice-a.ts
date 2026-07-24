@@ -100,4 +100,20 @@ export const invoiceATemplate = {
     </div>
 </body>
 </html>`,
+  params: [
+    { name: "company_name", label: "請求先会社名", type: "text" },
+    { name: "address", label: "請求先住所", type: "text" },
+    { name: "contact_person", label: "請求先担当者", type: "text" },
+    { name: "issue_date", label: "請求日", type: "text" },
+    { name: "due_date", label: "支払期限", type: "text" },
+    { name: "title", label: "件名", type: "text" },
+    { name: "item_name", label: "品目", type: "text" },
+    { name: "quantity", label: "数量", type: "text" },
+    { name: "price", label: "単価", type: "text" },
+    { name: "amount", label: "金額", type: "text" },
+    { name: "subtotal", label: "小計", type: "text" },
+    { name: "tax", label: "消費税", type: "text" },
+    { name: "total", label: "合計金額", type: "text" },
+    { name: "notes", label: "備考", type: "text-area" },
+  ],
 };
