@@ -28,9 +28,9 @@
           <h2>帳票設定</h2>
           <KintoneUiButton text="プレビュー" @callback-on-click="preview" />
         </div>
-        <section>
-          <label>テンプレート</label>
-          <div class="template-name-display">{{ templateDefinition.name }}</div>
+        <section class="template-name-container">
+          <label for="report-name">テンプレート</label>
+          <span>{{ templateDefinition.name }}</span>
         </section>
         <section>
           <label for="report-name" class="require-field">帳票名</label>
@@ -276,7 +276,7 @@ export default defineComponent({
         await pluginSetConfigAsync({
           reports: JSON.stringify(reports.value),
         });
-        showAlertDlg("設定保存完了", "プラグインの設定が保存されました。");
+        showAlertDlg("設定保存完了", "プラグインの設定を更新しました。<br>アプリの動作に反映するためには、アプリの設定画面で「アプリの更新」の実行が必要です。");
       } catch (e: any) {
         showAlertDlg("エラー", `設定の保存に失敗しました: ${e.message}`);
       }
@@ -296,7 +296,7 @@ export default defineComponent({
 
       localStorage.setItem("print-report-preview-mode", "true");
       localStorage.setItem("print-report-preview-data", JSON.stringify(report));
-      
+
       const message = "設定をプレビューします。レコード詳細画面を開いてください。";
       showAlertDlg("プレビュー", message);
     };
@@ -338,12 +338,13 @@ export default defineComponent({
 .report-editor-header h2 {
   margin-bottom: 0;
 }
-.template-name-display {
-  padding: 8px;
-  background-color: #f5f5f5;
-  border: 1px solid #e0e0e0;
-  border-radius: 4px;
-  margin-bottom: 5px;
+.template-name-container {
+  display: flex;
+  align-items: center;
+}
+.template-name-container label {
+  margin-bottom: 0;
+  margin-right: 1em;
 }
 .container {
   display: flex;

@@ -4,7 +4,7 @@
       {{ title }}
     </template>
     <template #body>
-      <p>{{ message }}</p>
+      <p v-html="message"></p>
     </template>
     <template #footer>
       <button class="kintoneplugin-button-dialog-ok" @click="onClose">
