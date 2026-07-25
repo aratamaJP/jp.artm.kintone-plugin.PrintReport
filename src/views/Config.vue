@@ -51,7 +51,7 @@
               <KintoneUiText
                 :id="`param-${param.name}`"
                 :value="templateParamsData[param.name]"
-                @callback-on-change="updateParam(param.name)"
+                @callback-on-change="updateParam(param.name)($event)"
               />
             </section>
 
@@ -72,7 +72,7 @@
                     :id="`param-${param.name}`"
                     :value="templateParamsData[param.name]"
                     :options="appFields"
-                    @callback-on-change="updateParam(param.name)"
+                    @callback-on-change="updateParam(param.name)($event)"
                 />
             </section>
 
@@ -85,7 +85,7 @@
                         :id="`param-${param.name}-table`"
                         :value="templateParamsData[param.name]?.tableCode"
                         :options="appTables"
-                        @callback-on-change="(value) => updateTableParam(param.name, 'tableCode', null)(value)"
+                        @callback-on-change="updateTableParam(param.name, 'tableCode', null)($event)"
                     />
                 </section>
                 <div v-if="templateParamsData[param.name]?.tableCode" class="table-sub-params">
@@ -95,7 +95,7 @@
                             :id="`param-${param.name}-${subParam.name}`"
                             :value="templateParamsData[param.name]?.mappings?.[subParam.name]"
                             :options="getTableFields(templateParamsData[param.name]?.tableCode)"
-                            @callback-on-change="(value) => updateTableParam(param.name, 'mappings', subParam.name)(value)"
+                            @callback-on-change="updateTableParam(param.name, 'mappings', subParam.name)($event)"
                         />
                     </section>
                 </div>
@@ -277,8 +277,11 @@ export default defineComponent({
       return table ? table.fields : [];
     };
 
-    const updateParam = (paramName: string) => (value: string) => {
-      templateParamsData.value[paramName] = value;
+    const updateParam = (paramName: string) => (value: any) => {
+      templateParamsData.value = {
+        ...templateParamsData.value,
+        [paramName]: value,
+      };
     };
 
     const updateTableParam = (
@@ -286,22 +289,22 @@ export default defineComponent({
       key: "tableCode" | "mappings",
       subParamName: string | null
     ) => (value: string) => {
-      if (!templateParamsData.value[paramName] || typeof templateParamsData.value[paramName] !== 'object') {
-        templateParamsData.value[paramName] = { tableCode: "", mappings: {} };
-      }
-
-      const param = templateParamsData.value[paramName];
+      const currentParam = { ...(templateParamsData.value[paramName] || { tableCode: "", mappings: {} }) };
 
       if (key === "tableCode") {
-        param.tableCode = value;
-        // Reset mappings if table changes
-        param.mappings = {};
+        currentParam.tableCode = value;
+        currentParam.mappings = {};
       } else if (key === "mappings" && subParamName) {
-        if (!param.mappings) {
-          param.mappings = {};
-        }
-        param.mappings[subParamName] = value;
+        currentParam.mappings = {
+          ...(currentParam.mappings || {}),
+          [subParamName]: value
+        };
       }
+      
+      templateParamsData.value = {
+        ...templateParamsData.value,
+        [paramName]: currentParam,
+      };
     };
 
     watch(selectedReport, (newReport) => {

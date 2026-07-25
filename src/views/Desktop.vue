@@ -44,6 +44,7 @@ interface Report {
   name: string;
   html: string;
   enabled: boolean;
+  template_params: string;
 }
 
 export default defineComponent({
@@ -114,8 +115,10 @@ export default defineComponent({
         showAlertDlg("エラー", "レコードデータが取得できません。");
         return;
       }
+      
+      const params = report.template_params ? JSON.parse(report.template_params) : {};
 
-      const renderedHtml = DesktopCtrl.renderTemplate(report.html, record.record);
+      const renderedHtml = DesktopCtrl.renderTemplate(report.html, record.record, params);
       DesktopCtrl.print(renderedHtml);
 
       closePrintDialog();
