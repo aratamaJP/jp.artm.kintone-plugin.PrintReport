@@ -121,6 +121,6 @@ export const invoiceATemplate = {
     { name: "subtotal", label: "小計", type: "field-select" },
     { name: "tax", label: "消費税", type: "field-select" },
     { name: "total", label: "合計金額", type: "field-select" },
-    { name: "notes", label: "備考", type: "text-area" },
+    { name: "notes", label: "備考", type: "field-select" },
   ],
 };
