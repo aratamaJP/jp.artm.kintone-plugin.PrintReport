@@ -76,8 +76,8 @@
                 />
             </section>
 
-            <!-- 'table-selec' type parameter -->
-            <div v-if="param.type === 'table-selec'" class="table-param-section">
+            <!-- 'table-select' type parameter -->
+            <div v-if="param.type === 'table-select'" class="table-param-section">
                 <h4>{{ param.label }}</h4>
                 <section>
                     <label :for="`param-${param.name}-table`">対象テーブル</label>
@@ -85,7 +85,7 @@
                         :id="`param-${param.name}-table`"
                         :value="templateParamsData[param.name]?.tableCode"
                         :options="appTables"
-                        @callback-on-change="updateTableParam(param.name, 'tableCode', null)"
+                        @callback-on-change="(value) => updateTableParam(param.name, 'tableCode', null)(value)"
                     />
                 </section>
                 <div v-if="templateParamsData[param.name]?.tableCode" class="table-sub-params">
@@ -95,7 +95,7 @@
                             :id="`param-${param.name}-${subParam.name}`"
                             :value="templateParamsData[param.name]?.mappings?.[subParam.name]"
                             :options="getTableFields(templateParamsData[param.name]?.tableCode)"
-                            @callback-on-change="updateTableParam(param.name, 'mappings', subParam.name)"
+                            @callback-on-change="(value) => updateTableParam(param.name, 'mappings', subParam.name)(value)"
                         />
                     </section>
                 </div>
