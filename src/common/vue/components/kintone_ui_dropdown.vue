@@ -17,7 +17,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, computed } from "vue";
+import { defineComponent, computed, PropType } from "vue";
 import "../../css/like_default_button.css";
 
 interface DropdownOption {
@@ -33,7 +33,7 @@ export default defineComponent({
       default: "",
     },
     options: {
-      type: Array,
+      type: Array as PropType<any[]>,
       default: () => [],
     },
   },

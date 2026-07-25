@@ -44,21 +44,63 @@
         <!-- Template Parameters Section -->
         <div v-if="templateDefinition && templateDefinition.params" class="template-params-section">
           <h3>テンプレート設定</h3>
-          <section v-for="param in templateDefinition.params" :key="param.name">
-            <label :for="`param-${param.name}`">{{ param.label }}</label>
-            <KintoneUiText
-              v-if="param.type === 'text'"
-              :id="`param-${param.name}`"
-              :value="templateParamsData[param.name]"
-              @callback-on-change="updateParam(param.name)"
-            />
-            <textarea
-              v-if="param.type === 'text-area'"
-              :id="`param-${param.name}`"
-              class="kintoneplugin-textarea"
-              v-model="templateParamsData[param.name]"
-            ></textarea>
-          </section>
+          <div v-for="param in templateDefinition.params" :key="param.name">
+            <!-- 'text' type parameter -->
+            <section v-if="param.type === 'text'">
+              <label :for="`param-${param.name}`">{{ param.label }}</label>
+              <KintoneUiText
+                :id="`param-${param.name}`"
+                :value="templateParamsData[param.name]"
+                @callback-on-change="updateParam(param.name)"
+              />
+            </section>
+
+            <!-- 'text-area' type parameter -->
+            <section v-if="param.type === 'text-area'">
+              <label :for="`param-${param.name}`">{{ param.label }}</label>
+              <textarea
+                :id="`param-${param.name}`"
+                class="kintoneplugin-textarea"
+                v-model="templateParamsData[param.name]"
+              ></textarea>
+            </section>
+
+            <!-- 'field-select' type parameter -->
+            <section v-if="param.type === 'field-select'">
+                <label :for="`param-${param.name}`">{{ param.label }}</label>
+                <KintoneUiDropdown
+                    :id="`param-${param.name}`"
+                    :value="templateParamsData[param.name]"
+                    :options="appFields"
+                    @callback-on-change="updateParam(param.name)"
+                />
+            </section>
+
+            <!-- 'table-selec' type parameter -->
+            <div v-if="param.type === 'table-selec'" class="table-param-section">
+                <h4>{{ param.label }}</h4>
+                <section>
+                    <label :for="`param-${param.name}-table`">対象テーブル</label>
+                    <KintoneUiDropdown
+                        :id="`param-${param.name}-table`"
+                        :value="templateParamsData[param.name]?.tableCode"
+                        :options="appTables"
+                        @callback-on-change="updateTableParam(param.name, 'tableCode', null)"
+                    />
+                </section>
+                <div v-if="templateParamsData[param.name]?.tableCode" class="table-sub-params">
+                    <section v-for="subParam in param.params" :key="subParam.name">
+                        <label :for="`param-${param.name}-${subParam.name}`">{{ subParam.label }}</label>
+                        <KintoneUiDropdown
+                            :id="`param-${param.name}-${subParam.name}`"
+                            :value="templateParamsData[param.name]?.mappings?.[subParam.name]"
+                            :options="getTableFields(templateParamsData[param.name]?.tableCode)"
+                            @callback-on-change="updateTableParam(param.name, 'mappings', subParam.name)"
+                        />
+                    </section>
+                </div>
+            </div>
+          </div>
         </div>
 
 
@@ -134,6 +176,7 @@ import { defineComponent, ref, onMounted, computed, watch } from "vue";
 import AlertDialog from "@/common/vue/components/alert_dialog.vue";
 import KintoneUiButton from "@/common/vue/components/kintone_ui_button.vue";
 import KintoneUiText from "@/common/vue/components/kintone_ui_text.vue";
+import KintoneUiDropdown from "@/common/vue/components/kintone_ui_dropdown.vue";
 import ModalDialog from "@/common/vue/components/modal_dialog.vue";
 
 import { imgDelete } from "@/common/const/PictureBase64";
@@ -154,6 +197,7 @@ export default defineComponent({
   components: {
     KintoneUiButton,
     KintoneUiText,
+    KintoneUiDropdown,
     AlertDialog,
     ModalDialog,
   },
@@ -182,10 +226,82 @@ export default defineComponent({
       return null;
     });
 
-    const templateParamsData = ref<Record<string, string>>({});
+    const templateParamsData = ref<Record<string, any>>({});
+
+    const appFields = ref<{ value: string; label: string }[]>([]);
+    const appTables = ref<
+      { value: string; label: string; fields: { value: string; label: string }[] }[]
+    >([]);
+
+    const fetchKintoneFields = async () => {
+      const kintoneAppId = kintone.app.getId();
+      if(!kintoneAppId) {
+        //
+        // Configuration page is opened on the global settings page.
+        //
+        return;
+      }
+      const resp = await kintone.api(
+        kintone.api.url("/k/v1/form.json", true),
+        "GET",
+        { app: kintoneAppId }
+      );
+      const fields: { value: string; label: string }[] = [{ value: "", label: "（未選択）" }];
+      const tables: { value: string; label: string; fields: { value: string; label: string }[] }[] = [{ value: "", label: "（未選択）", fields: [] }];
+
+      // Using any to avoid creating full type definitions for kintone API response
+      for (const prop of Object.values<any>(resp.properties)) {
+        fields.push({ value: prop.code, label: `${prop.label} (${prop.code})` });
+        if (prop.type === "SUBTABLE") {
+          const tableSubFields: { value: string; label: string }[] = [{ value: "", label: "（未選択）" }];
+          for (const subField of Object.values<any>(prop.fields)) {
+            tableSubFields.push({
+              value: subField.code,
+              label: `${subField.label} (${subField.code})`,
+            });
+          }
+          tables.push({
+            value: prop.code,
+            label: `${prop.label} (${prop.code})`,
+            fields: tableSubFields,
+          });
+        }
+      }
+      appFields.value = fields;
+      appTables.value = tables;
+    };
+
+    const getTableFields = (tableCode: string): { value: string; label: string }[] => {
+      if (!tableCode) return [];
+      const table = appTables.value.find((t) => t.value === tableCode);
+      return table ? table.fields : [];
+    };
 
     const updateParam = (paramName: string) => (value: string) => {
       templateParamsData.value[paramName] = value;
+    };
+
+    const updateTableParam = (
+      paramName: string,
+      key: "tableCode" | "mappings",
+      subParamName: string | null
+    ) => (value: string) => {
+      if (!templateParamsData.value[paramName] || typeof templateParamsData.value[paramName] !== 'object') {
+        templateParamsData.value[paramName] = { tableCode: "", mappings: {} };
+      }
+
+      const param = templateParamsData.value[paramName];
+
+      if (key === "tableCode") {
+        param.tableCode = value;
+        // Reset mappings if table changes
+        param.mappings = {};
+      } else if (key === "mappings" && subParamName) {
+        if (!param.mappings) {
+          param.mappings = {};
+        }
+        param.mappings[subParamName] = value;
+      }
     };
 
     watch(selectedReport, (newReport) => {
@@ -217,7 +333,10 @@ export default defineComponent({
       }
     };
 
-    onMounted(loadConfig);
+    onMounted(() => {
+      loadConfig();
+      fetchKintoneFields();
+    });
 
     const openTemplateDialog = () => {
       showTemplateDialog.value = true;
@@ -323,6 +442,10 @@ export default defineComponent({
       templateParamsData,
       updateParam,
       preview,
+      appFields,
+      appTables,
+      getTableFields,
+      updateTableParam
     };
   },
 });
@@ -431,5 +554,24 @@ export default defineComponent({
 .template-params-section h3 {
   margin-top: 0;
   margin-bottom: 15px;
+}
+.table-param-section {
+  border: 1px solid #ddd;
+  padding: 10px;
+  margin-top: 10px;
+  border-radius: 4px;
+  background-color: #f9f9f9;
+}
+.table-param-section h4 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  font-size: 1em;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 5px;
+}
+.table-sub-params {
+  padding-left: 15px;
+  border-left: 3px solid #eee;
+  margin-top: 10px;
 }
 </style>
