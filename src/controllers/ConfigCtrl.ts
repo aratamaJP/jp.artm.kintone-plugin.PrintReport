@@ -1,4 +1,1 @@
-
-export class ConfigCtrl {
-
-}
+export class ConfigCtrl {}

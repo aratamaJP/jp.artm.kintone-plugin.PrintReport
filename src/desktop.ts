@@ -5,7 +5,10 @@ import { createApp } from "vue";
 
 import { PLUGIN_NAME } from "@/common/const/SystemConst";
 import { KintoneEvents } from "@/common/kintone/KintoneEvents";
-import { getPluginConfig, getHeaderSpace } from '@/common/kintone/KintoneJsapiWrapper';
+import {
+  getPluginConfig,
+  getHeaderSpace,
+} from "@/common/kintone/KintoneJsapiWrapper";
 // import { PrintReport } from "./PrintReport";
 
 import DesktopView from "@/views/Desktop.vue";
@@ -14,9 +17,7 @@ const PLUGIN_ID = kintone.$PLUGIN_ID;
 const DIV_HEADER_PANEL_ELEMENT_ID = "artm-print-report-header-panel";
 
 kintone.events.on(KintoneEvents.Detail.Show, async (event: any) => {
-
   try {
-
     // Kintone プラグイン設定 読み込み
     let config;
     const configStore = getPluginConfig(PLUGIN_ID);
@@ -31,12 +32,9 @@ kintone.events.on(KintoneEvents.Detail.Show, async (event: any) => {
       headerSpace.appendChild(div);
     }
 
-    createApp(
-      DesktopView,
-      {
-        config
-      }
-    ).mount('#' + DIV_HEADER_PANEL_ELEMENT_ID);
+    createApp(DesktopView, {
+      config,
+    }).mount("#" + DIV_HEADER_PANEL_ELEMENT_ID);
 
     /*
     const reports: Report[] = JSON.parse(configStore.reports);
@@ -61,9 +59,7 @@ kintone.events.on(KintoneEvents.Detail.Show, async (event: any) => {
     */
 
     return event;
-
   } catch (e) {
-      console.error(`${PLUGIN_NAME} error:`, e);
+    console.error(`${PLUGIN_NAME} error:`, e);
   }
-
 });

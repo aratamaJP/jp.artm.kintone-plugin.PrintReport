@@ -5,19 +5,16 @@ import { KintoneRestAPIClient } from "@kintone/rest-api-client";
  * @param {string} pluginId
  * @returns
  */
-export function getPluginConfig(pluginId:string) {
-
+export function getPluginConfig(pluginId: string) {
   return kintone.plugin.app.getConfig(pluginId);
-
 }
 
 /**
  * モバイルページ または モバイルアプリからの呼び出しかどうかを判定する
  * @returns {boolean}
  */
-export async function isMobile()
-{
-  return await kintone.isMobileApp() || await kintone.isMobilePage();
+export async function isMobile() {
+  return (await kintone.isMobileApp()) || (await kintone.isMobilePage());
 }
 
 export function getThisAppId() {
@@ -28,7 +25,6 @@ export function getThisAppId() {
  * ヘッダースペース取得
  */
 export async function getHeaderSpace() {
-
   if (await isMobile()) {
     return kintone.mobile.app.getHeaderSpaceElement();
   }
@@ -54,8 +50,10 @@ function getFieldDefs(subTblFieldDefs: any, subTblLayout: any): any[] {
 /**
  * 全サブテーブルの列フィールド定義情報を取得する
  */
-export async function getAppFieldsDefAsync(restApiClient: KintoneRestAPIClient, appId: string | number) {
-
+export async function getAppFieldsDefAsync(
+  restApiClient: KintoneRestAPIClient,
+  appId: string | number,
+) {
   const subTblDefs: Record<string, any> = {};
 
   // アプリのフィールド定義を取得
@@ -68,25 +66,22 @@ export async function getAppFieldsDefAsync(restApiClient: KintoneRestAPIClient, 
     app: appId,
   });
 
-
-  for(let fieldCode in appFields.properties) {
-
+  for (const fieldCode in appFields.properties) {
     const property = appFields.properties[fieldCode];
 
     if (property.type === "SUBTABLE") {
-
       // サブテーブルのフィールド定義
       const subTblFieldDefs = property.fields;
 
       // サブテーブルのフィールドレイアウト
-      const subTblLayout = layouts.layout.find((item: any) => item.code === fieldCode);
+      const subTblLayout = layouts.layout.find(
+        (item: any) => item.code === fieldCode,
+      );
 
       const fieldDefs = getFieldDefs(subTblFieldDefs, subTblLayout);
       subTblDefs[fieldCode] = fieldDefs;
-
     }
   }
 
   return subTblDefs;
-
 }

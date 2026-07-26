@@ -1,4 +1,3 @@
-
 interface Report {
   name: string;
   html: string;
@@ -6,7 +5,6 @@ interface Report {
 }
 
 export class DesktopCtrl {
-
   public static print(html: string): void {
     const printContent = html;
     if (!printContent) {
@@ -24,7 +22,11 @@ export class DesktopCtrl {
     }
   }
 
-  public static renderTemplate(template: string, record: any, params: any): string {
+  public static renderTemplate(
+    template: string,
+    record: any,
+    params: any,
+  ): string {
     let renderedHtml = template;
 
     // Process all parameters from the config
@@ -32,13 +34,17 @@ export class DesktopCtrl {
       const mappingInfo = params[placeholder];
 
       // Handle table parameters
-      if (typeof mappingInfo === 'object' && mappingInfo.tableCode && mappingInfo.mappings) {
+      if (
+        typeof mappingInfo === "object" &&
+        mappingInfo.tableCode &&
+        mappingInfo.mappings
+      ) {
         const tableCode = mappingInfo.tableCode;
         const tableMappings = mappingInfo.mappings;
         const tableData = record[tableCode]?.value;
 
         if (tableData && Array.isArray(tableData)) {
-          const tableRegex = new RegExp(`<tbody>[\\s\\S]*?</tbody>`, 'i');
+          const tableRegex = new RegExp(`<tbody>[\\s\\S]*?</tbody>`, "i");
           const tableMatch = renderedHtml.match(tableRegex);
 
           if (tableMatch) {
@@ -48,7 +54,7 @@ export class DesktopCtrl {
 
             if (rowMatch) {
               const rowTemplate = rowMatch[0];
-              let generatedRows = '';
+              let generatedRows = "";
 
               tableData.forEach((row) => {
                 let currentRowHtml = rowTemplate;
@@ -56,32 +62,47 @@ export class DesktopCtrl {
                   const subFieldCode = tableMappings[subPlaceholder];
                   const cellValue = row.value[subFieldCode]?.value;
 
-                  const regex = new RegExp(`\\{\\{${subPlaceholder}\\}\\}`, 'g');
-                  currentRowHtml = currentRowHtml.replace(regex, DesktopCtrl.escapeHtml(cellValue ?? ''));
+                  const regex = new RegExp(
+                    `\\{\\{${subPlaceholder}\\}\\}`,
+                    "g",
+                  );
+                  currentRowHtml = currentRowHtml.replace(
+                    regex,
+                    DesktopCtrl.escapeHtml(cellValue ?? ""),
+                  );
                 }
                 generatedRows += currentRowHtml;
               });
-              
-              renderedHtml = renderedHtml.replace(originalTbody, `<tbody>${generatedRows}</tbody>`);
+
+              renderedHtml = renderedHtml.replace(
+                originalTbody,
+                `<tbody>${generatedRows}</tbody>`,
+              );
             }
           }
         }
-      } 
+      }
       // Handle regular field parameters
-      else if (typeof mappingInfo === 'string') {
+      else if (typeof mappingInfo === "string") {
         const fieldCode = mappingInfo;
         const fieldValue = record[fieldCode]?.value;
-        const regex = new RegExp(`\\{\\{${placeholder}\\}\\}`, 'g');
-        renderedHtml = renderedHtml.replace(regex, DesktopCtrl.escapeHtml(fieldValue ?? ''));
+        const regex = new RegExp(`\\{\\{${placeholder}\\}\\}`, "g");
+        renderedHtml = renderedHtml.replace(
+          regex,
+          DesktopCtrl.escapeHtml(fieldValue ?? ""),
+        );
       }
     }
+
+    // Replace any unmapped placeholders with an empty string
+    renderedHtml = renderedHtml.replace(/\{\{[\s\S]*?\}\}/g, "");
 
     return renderedHtml;
   }
 
   private static escapeHtml(str: any): string {
     if (str === null || str === undefined) {
-      return '';
+      return "";
     }
     const strValue = String(str);
     return strValue

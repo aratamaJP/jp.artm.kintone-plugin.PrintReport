@@ -15,13 +15,9 @@ if (configStore.config) {
   config = JSON.parse(configStore.config);
 }
 
-createApp(
-  ConfigView,
-  {
-    config
-  }
-).mount('#' + TARGET_ELEMENT_ID);
-
+createApp(ConfigView, {
+  config,
+}).mount("#" + TARGET_ELEMENT_ID);
 
 /*
 const form = document.querySelector(".js-submit-settings");
