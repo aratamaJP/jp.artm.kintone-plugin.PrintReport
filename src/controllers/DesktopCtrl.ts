@@ -1,15 +1,28 @@
-interface Report {
-  name: string;
-  html: string;
-  enabled: boolean;
-}
-
 export class DesktopCtrl {
   public static print(html: string): void {
-    const printContent = html;
+    let printContent = html;
     if (!printContent) {
       alert("印刷する内容がありません。");
       return;
+    }
+
+    const printStyle = `
+<style type="text/css">
+  @media print {
+    @page {
+      margin: 0;
+    }
+    body {
+      margin: 1.6cm !important;
+    }
+  }
+</style>
+`;
+
+    if (printContent.includes("</head>")) {
+      printContent = printContent.replace("</head>", `${printStyle}</head>`);
+    } else {
+      printContent += printStyle;
     }
 
     const printWindow = window.open("", "_blank");
@@ -31,6 +44,10 @@ export class DesktopCtrl {
 
     // Process all parameters from the config
     for (const placeholder in params) {
+      if (!Object.prototype.hasOwnProperty.call(params, placeholder)) {
+        continue;
+      }
+
       const mappingInfo = params[placeholder];
 
       // Handle table parameters
@@ -43,44 +60,55 @@ export class DesktopCtrl {
         const tableMappings = mappingInfo.mappings;
         const tableData = record[tableCode]?.value;
 
-        if (tableData && Array.isArray(tableData)) {
-          const tableRegex = new RegExp(`<tbody>[\\s\\S]*?</tbody>`, "i");
-          const tableMatch = renderedHtml.match(tableRegex);
-
-          if (tableMatch) {
-            const originalTbody = tableMatch[0];
-            const rowTemplateRegex = /<tr.*?>([\s\S]*?)<\/tr>/i;
-            const rowMatch = originalTbody.match(rowTemplateRegex);
-
-            if (rowMatch) {
-              const rowTemplate = rowMatch[0];
-              let generatedRows = "";
-
-              tableData.forEach((row) => {
-                let currentRowHtml = rowTemplate;
-                for (const subPlaceholder in tableMappings) {
-                  const subFieldCode = tableMappings[subPlaceholder];
-                  const cellValue = row.value[subFieldCode]?.value;
-
-                  const regex = new RegExp(
-                    `\\{\\{${subPlaceholder}\\}\\}`,
-                    "g",
-                  );
-                  currentRowHtml = currentRowHtml.replace(
-                    regex,
-                    DesktopCtrl.escapeHtml(cellValue ?? ""),
-                  );
-                }
-                generatedRows += currentRowHtml;
-              });
-
-              renderedHtml = renderedHtml.replace(
-                originalTbody,
-                `<tbody>${generatedRows}</tbody>`,
-              );
-            }
-          }
+        if (!tableData || !Array.isArray(tableData)) {
+          continue;
         }
+        const tableRegex = /<tbody>[\s\S]*?<\/tbody>/i;
+        const tableMatch = renderedHtml.match(tableRegex);
+
+        if (!tableMatch) {
+          continue;
+        }
+
+        const originalTbody = tableMatch[0];
+        const rowTemplateRegex = /<tr.*?>([\s\S]*?)<\/tr>/i;
+        const rowMatch = originalTbody.match(rowTemplateRegex);
+
+        if (!rowMatch) {
+          continue;
+        }
+
+        const rowTemplate = rowMatch[0];
+        let generatedRows = "";
+
+        tableData.forEach((row) => {
+          let currentRowHtml = rowTemplate;
+          for (const subPlaceholder in tableMappings) {
+            if (
+              !Object.prototype.hasOwnProperty.call(
+                tableMappings,
+                subPlaceholder,
+              )
+            ) {
+              continue;
+            }
+
+            const subFieldCode = tableMappings[subPlaceholder];
+            const cellValue = row.value[subFieldCode]?.value;
+
+            const regex = new RegExp(`\\{\\{${subPlaceholder}\\}\\}`, "g");
+            currentRowHtml = currentRowHtml.replace(
+              regex,
+              DesktopCtrl.escapeHtml(cellValue ?? ""),
+            );
+          }
+          generatedRows += currentRowHtml;
+        });
+
+        renderedHtml = renderedHtml.replace(
+          originalTbody,
+          `<tbody>${generatedRows}</tbody>`,
+        );
       }
       // Handle regular field parameters
       else if (typeof mappingInfo === "string") {
