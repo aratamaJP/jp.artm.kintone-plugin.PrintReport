@@ -24,6 +24,10 @@ export class DesktopCtrl {
         color: #333;
       }
     }
+    .invoice-box {
+      border: none !important;
+      box-shadow: none !important;
+    }
   }
 </style>
 `;
