@@ -10,10 +10,19 @@ export class DesktopCtrl {
 <style type="text/css">
   @media print {
     @page {
-      margin: 0;
-    }
-    body {
-      margin: 1.6cm !important;
+      /* 用紙の基本余白を設定 */
+      margin: 15mm;
+
+      @top-center {
+        content : "";
+      }
+
+      /* フッターの中央に「ページ 1 / 3」形式で印字 */
+      @bottom-center {
+        content: "ページ " counter(page) " / " counter(pages);
+        font-size: 9pt;
+        color: #333;
+      }
     }
   }
 </style>
