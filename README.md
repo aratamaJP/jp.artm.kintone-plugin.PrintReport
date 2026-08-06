@@ -3,10 +3,6 @@
 レコード詳細画面に、帳票印刷機能を追加するプラグイン
 
 
-# Kintone Plug-in ID
-jggajphacebhhbolfilkphnjpfkadbci
-
-
 # Getting Started
 
 ## 開発環境準備

@@ -199,6 +199,7 @@ import ModalDialog from "@/common/vue/components/modal_dialog.vue";
 
 import { imgDelete } from "@/common/const/PictureBase64";
 import { pluginSetConfigAsync } from "@/models/ConfigModel";
+import { getThisAppId } from "@/common/kintone/KintoneJsapiWrapper";
 import { TEMPLATES } from "./templates";
 import { verifyLicense, getPurchaseUrl } from "@/services/LicenseService";
 
@@ -256,7 +257,7 @@ export default defineComponent({
     >([]);
 
     const fetchKintoneFields = async () => {
-      const kintoneAppId = kintone.app.getId();
+      const kintoneAppId = getThisAppId();
       if(!kintoneAppId) {
         //
         // Configuration page is opened on the global settings page.

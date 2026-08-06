@@ -2,7 +2,10 @@
 // import { KintoneRestAPIClient } from "@kintone/rest-api-client";
 
 import { createApp } from "vue";
-import { getPluginConfig } from "@/common/kintone/KintoneJsapiWrapper";
+import {
+  getPluginConfig,
+  getThisAppId,
+} from "@/common/kintone/KintoneJsapiWrapper";
 import ConfigView from "@/views/Config.vue";
 
 const PLUGIN_ID = kintone.$PLUGIN_ID;
@@ -37,10 +40,10 @@ form.addEventListener("submit", (e) => {
   e.preventDefault();
   kintone.plugin.app.setConfig({ message: messageInput.value }, () => {
     alert("The plug-in settings have been saved. Please update the app!");
-    window.location.href = "../../flow?app=" + kintone.app.getId();
+    window.location.href = "../../flow?app=" + getThisAppId();
   });
 });
 cancelButton.addEventListener("click", () => {
-  window.location.href = "../../" + kintone.app.getId() + "/plugin/";
+  window.location.href = "../../" + getThisAppId() + "/plugin/";
 });
 */

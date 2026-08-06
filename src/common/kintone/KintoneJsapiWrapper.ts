@@ -13,8 +13,8 @@ export function getPluginConfig(pluginId: string) {
  * モバイルページ または モバイルアプリからの呼び出しかどうかを判定する
  * @returns {boolean}
  */
-export async function isMobile() {
-  return (await kintone.isMobileApp()) || (await kintone.isMobilePage());
+export function isMobile() {
+  return kintone.isMobileApp() || kintone.isMobilePage();
 }
 
 export function getThisAppId() {
@@ -67,19 +67,21 @@ export async function getAppFieldsDefAsync(
   });
 
   for (const fieldCode in appFields.properties) {
-    const property = appFields.properties[fieldCode];
+    if (Object.prototype.hasOwnProperty.call(appFields.properties, fieldCode)) {
+      const property = appFields.properties[fieldCode];
 
-    if (property.type === "SUBTABLE") {
-      // サブテーブルのフィールド定義
-      const subTblFieldDefs = property.fields;
+      if (property.type === "SUBTABLE") {
+        // サブテーブルのフィールド定義
+        const subTblFieldDefs = property.fields;
 
-      // サブテーブルのフィールドレイアウト
-      const subTblLayout = layouts.layout.find(
-        (item: any) => item.code === fieldCode,
-      );
+        // サブテーブルのフィールドレイアウト
+        const subTblLayout = layouts.layout.find(
+          (item: any) => item.code === fieldCode,
+        );
 
-      const fieldDefs = getFieldDefs(subTblFieldDefs, subTblLayout);
-      subTblDefs[fieldCode] = fieldDefs;
+        const fieldDefs = getFieldDefs(subTblFieldDefs, subTblLayout);
+        subTblDefs[fieldCode] = fieldDefs;
+      }
     }
   }
 
