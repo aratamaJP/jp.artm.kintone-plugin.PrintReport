@@ -132,6 +132,24 @@
       </div>
     </div>
 
+    <div class="license-section">
+      <h2>ライセンス設定</h2>
+      <section>
+        <label for="license-key">ライセンスキー</label>
+        <div class="license-input-container">
+          <KintoneUiText
+            id="license-key"
+            :value="licenseKey"
+            @callback-on-change="updateLicenseKey"
+          />
+          <KintoneUiButton text="認証" @callback-on-click="verifyLicenseKey" />
+        </div>
+        <p class="license-purchase-link">
+          ライセンスキーをお持ちでない場合は、<a :href="purchaseUrl" target="_blank">こちら</a>からご購入ください。
+        </p>
+      </section>
+    </div>
+
     <section id="save-btns">
       <KintoneUiButton
         text="キャンセル"
@@ -182,6 +200,7 @@ import ModalDialog from "@/common/vue/components/modal_dialog.vue";
 import { imgDelete } from "@/common/const/PictureBase64";
 import { pluginSetConfigAsync } from "@/models/ConfigModel";
 import { TEMPLATES } from "./templates";
+import { verifyLicense, getPurchaseUrl } from "@/services/LicenseService";
 
 interface Report {
   name: string;
@@ -205,6 +224,9 @@ export default defineComponent({
   setup(props) {
     const reports = ref<Report[]>([]);
     const selectedReportIndex = ref<number | null>(null);
+
+    const licenseKey = ref("");
+    const purchaseUrl = ref("");
 
     const alertDlgVisible = ref(false);
     const alertTitle = ref("");
@@ -328,10 +350,15 @@ export default defineComponent({
 
 
     const loadConfig = () => {
-      if (props.config && props.config.reports) {
-        reports.value = JSON.parse(props.config.reports);
-        if (reports.value.length > 0) {
-          selectedReportIndex.value = 0;
+      if (props.config) {
+        if (props.config.reports) {
+          reports.value = JSON.parse(props.config.reports);
+          if (reports.value.length > 0) {
+            selectedReportIndex.value = 0;
+          }
+        }
+        if (props.config.licenseKey) {
+          licenseKey.value = props.config.licenseKey;
         }
       }
     };
@@ -339,6 +366,7 @@ export default defineComponent({
     onMounted(() => {
       loadConfig();
       fetchKintoneFields();
+      purchaseUrl.value = getPurchaseUrl();
     });
 
     const openTemplateDialog = () => {
@@ -397,6 +425,7 @@ export default defineComponent({
       try {
         await pluginSetConfigAsync({
           reports: JSON.stringify(reports.value),
+          licenseKey: licenseKey.value,
         });
         showAlertDlg("設定保存完了", "プラグインの設定を更新しました。<br>アプリの動作に反映するためには、アプリの設定画面で「アプリの更新」の実行が必要です。");
       } catch (e: any) {
@@ -421,6 +450,15 @@ export default defineComponent({
 
       const message = "設定をプレビューします。レコード詳細画面を開いてください。";
       showAlertDlg("プレビュー", message);
+    };
+
+    const verifyLicenseKey = async () => {
+      const result = await verifyLicense(licenseKey.value);
+      showAlertDlg(`ライセンス認証結果 (${result.status})`, result.message);
+    };
+
+    const updateLicenseKey = (v: string) => {
+      licenseKey.value = v;
     };
 
     return {
@@ -448,7 +486,11 @@ export default defineComponent({
       appFields,
       appTables,
       getTableFields,
-      updateTableParam
+      updateTableParam,
+      licenseKey,
+      purchaseUrl,
+      verifyLicenseKey,
+      updateLicenseKey
     };
   },
 });
@@ -576,5 +618,23 @@ export default defineComponent({
   padding-left: 15px;
   border-left: 3px solid #eee;
   margin-top: 10px;
+}
+.license-section {
+  border-top: 1px solid #ccc;
+  margin-top: 2em;
+  padding-top: 1.5em;
+}
+.license-section h2 {
+  margin-bottom: 1em;
+}
+.license-input-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.license-purchase-link {
+  margin-top: 1em;
+  font-size: 0.9em;
+  color: #555;
 }
 </style>

@@ -1,1 +1,1 @@
-export const PLUGIN_NAME = "テーブル階層表示プラグイン";
+export const PLUGIN_NAME = "帳票印刷プラグイン";
