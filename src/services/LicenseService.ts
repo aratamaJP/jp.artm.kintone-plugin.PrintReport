@@ -1,6 +1,9 @@
 // src/services/LicenseService.ts
+
 const API_ENDPOINT = "https://lm.artm.jp/api/verify/";
 const PURCHASE_URL = "https://www.artm.jp/kintone-plugin/print-report#purchase";
+
+const ARTM_LICENSE_PRODUCT_ID = "kintone-plugin-print-report";
 
 type VerifyResult = {
   status: "valid" | "invalid" | "expired";
@@ -28,14 +31,21 @@ export const verifyLicense = async (
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ license_key: licenseKey }),
+      body: JSON.stringify({
+        license_key: licenseKey,
+        product_id: ARTM_LICENSE_PRODUCT_ID,
+        domain: location.hostname,
+      }),
     });
 
     if (!response.ok) {
+      const errorData = await response.json();
       console.error("Network response was not ok", response);
       return {
         status: "invalid",
-        message: `ライセンス認証サーバーとの通信に失敗しました。(HTTP ${response.status})`,
+        message: `ライセンス認証サーバーとの通信に失敗しました。(HTTP ${
+          response.status
+        }) \n ${JSON.stringify(errorData)}`,
       };
     }
 
