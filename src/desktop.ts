@@ -38,6 +38,7 @@ const checkLicense = async (
   const configStore = getPluginConfig(PLUGIN_ID);
   const settings = configStore.config ? JSON.parse(configStore.config) : {};
   const licenseKey = settings.licenseKey || "";
+  console.log("プラグインの設定: ", settings);
 
   const result = await verifyLicense(licenseKey);
 

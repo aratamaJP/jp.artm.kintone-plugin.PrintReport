@@ -424,10 +424,12 @@ export default defineComponent({
 
     const saveOnClick = async () => {
       try {
-        await pluginSetConfigAsync({
+        const configToSave = {
           reports: JSON.stringify(reports.value),
           licenseKey: licenseKey.value,
-        });
+        };
+        console.log("保存するプラグイン設定: ", configToSave);
+        await pluginSetConfigAsync(configToSave);
         showAlertDlg("設定保存完了", "プラグインの設定を更新しました。<br>アプリの動作に反映するためには、アプリの設定画面で「アプリの更新」の実行が必要です。");
       } catch (e: any) {
         showAlertDlg("エラー", `設定の保存に失敗しました: ${e.message}`);
