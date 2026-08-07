@@ -6,7 +6,7 @@ const PURCHASE_URL = "https://www.artm.jp/kintone-plugin/print-report#purchase";
 const ARTM_LICENSE_PRODUCT_ID = "kintone-plugin-print-report";
 
 type VerifyResult = {
-  status: "valid" | "invalid" | "expired";
+  status: "success" | "valid" | "invalid" | "expired";
   message: string;
 };
 

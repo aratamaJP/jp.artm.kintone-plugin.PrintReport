@@ -41,8 +41,9 @@ const checkLicense = async (
   console.log("プラグインの設定: ", settings);
 
   const result = await verifyLicense(licenseKey);
+  console.log("ライセンス検証結果: ", result);
 
-  if (result.status === "valid") {
+  if (result.status === "success") {
     return true;
   }
 
