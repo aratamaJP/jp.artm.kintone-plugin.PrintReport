@@ -80,6 +80,14 @@ export default defineComponent({
       if (props.config && props.config.reports) {
         reports.value = JSON.parse(props.config.reports);
       }
+
+      for (const report of reports.value) {
+        console.log(report.name);
+        console.log(report.html);
+        console.log(report.enabled);
+        console.log(report.template_params);
+      }
+
     };
 
     onMounted(loadConfig);
@@ -115,7 +123,7 @@ export default defineComponent({
         showAlertDlg("エラー", "レコードデータが取得できません。");
         return;
       }
-      
+
       const params = report.template_params ? JSON.parse(report.template_params) : {};
 
       const renderedHtml = DesktopCtrl.renderTemplate(report.html, record.record, params);

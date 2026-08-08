@@ -1,5 +1,5 @@
 export const invoiceATemplate = {
-  name: "請求書A",
+  name: "請求書A (インボイス対応)",
   html: `<!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -37,8 +37,30 @@ export const invoiceATemplate = {
         .invoice-table th {
             background-color: #f2f2f2;
         }
-        .total {
+        .total-section {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+        .total-table {
+            border-collapse: collapse;
+            width: 50%;
+        }
+        .total-table th, .total-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
             text-align: right;
+        }
+        .total-table th {
+            background-color: #f2f2f2;
+        }
+        .total-amount-row th {
+            text-align: right;
+        }
+        .total-amount-row td {
+            font-weight: bold;
+        }
+        .notes {
             margin-top: 20px;
         }
     </style>
@@ -50,15 +72,17 @@ export const invoiceATemplate = {
             <tr>
                 <td class="bill-to">
                     <strong>請求先:</strong><br>
-                    {{company_name}}<br>
-                    {{address}}<br>
-                    担当者: {{contact_person}}
+                    {{to_company_name}}<br>
+                    {{to_address}}<br>
+                    担当者: {{to_contact_person}}
                 </td>
                 <td class="company-details">
                     <strong>発行元:</strong><br>
-                    株式会社〇〇<br>
-                    〒123-4567 東京都〇〇区〇〇1-2-3<br>
-                    TEL: 03-1234-5678
+                    {{ from_company_name }}<br>
+                    登録番号: {{ from_registration_number }}<br>
+                    {{ from_postcode }}<br>
+                    {{ from_address }}<br>
+                    {{ from_tel }}<br>
                 </td>
             </tr>
         </table>
@@ -74,6 +98,7 @@ export const invoiceATemplate = {
                     <th>数量</th>
                     <th>単価</th>
                     <th>金額</th>
+                    <th>税率</th>
                 </tr>
             </thead>
             <tbody>
@@ -83,13 +108,34 @@ export const invoiceATemplate = {
                     <td>{{quantity}}</td>
                     <td>{{price}}</td>
                     <td>{{amount}}</td>
+                    <td>{{tax_rate}}</td>
                 </tr>
             </tbody>
         </table>
-        <div class="total">
-            <p><strong>小計:</strong> {{subtotal}}</p>
-            <p><strong>消費税:</strong> {{tax}}</p>
-            <p><strong>合計金額:</strong> {{total}}</p>
+        <div class="total-section">
+            <table class="total-table">
+                <thead>
+                    <tr>
+                        <th>税率</th>
+                        <th>対象合計</th>
+                        <th>消費税額</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- ここに税率毎の合計が繰り返し表示されます -->
+                    <tr>
+                        <td>{{tax_summary_rate}}</td>
+                        <td>{{tax_summary_subtotal}}</td>
+                        <td>{{tax_summary_tax}}</td>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr class="total-amount-row">
+                        <th colspan="2">合計金額</th>
+                        <td>{{total}}</td>
+                    </tr>
+                </tfoot>
+            </table>
         </div>
         <div class="notes">
             <strong>備考:</strong><br>
@@ -99,9 +145,14 @@ export const invoiceATemplate = {
 </body>
 </html>`,
   params: [
-    { name: "company_name", label: "請求先会社名", type: "field-select" },
-    { name: "address", label: "請求先住所", type: "field-select" },
-    { name: "contact_person", label: "請求先担当者", type: "field-select" },
+    { name: "to_company_name", label: "請求先会社名", type: "field-select" },
+    { name: "to_address", label: "請求先住所", type: "field-select" },
+    { name: "to_contact_person", label: "請求先担当者", type: "field-select" },
+    { name: "from_company_name", label: "発行元会社名", type: "field-select" },
+    { name: "from_registration_number", label: "登録番号", type: "field-select" },
+    { name: "from_postcode", label: "発行元郵便番号", type: "field-select" },
+    { name: "from_address", label: "発行元住所", type: "field-select" },
+    { name: "from_tel", label: "発行元電話番号", type: "field-select" },
     { name: "issue_date", label: "請求日", type: "field-select" },
     { name: "due_date", label: "支払期限", type: "field-select" },
     { name: "title", label: "件名", type: "field-select" },
@@ -114,10 +165,19 @@ export const invoiceATemplate = {
         { name: "quantity", label: "数量", type: "field-select" },
         { name: "price", label: "単価", type: "field-select" },
         { name: "amount", label: "金額", type: "field-select" },
+        { name: "tax_rate", label: "税率", type: "field-select" },
       ],
     },
-    { name: "subtotal", label: "小計", type: "field-select" },
-    { name: "tax", label: "消費税", type: "field-select" },
+    {
+      name: "tax_summary_table",
+      label: "税率毎の合計テーブル",
+      type: "table-select",
+      params: [
+        { name: "tax_summary_rate", label: "税率", type: "field-select" },
+        { name: "tax_summary_subtotal", label: "対象合計", type: "field-select" },
+        { name: "tax_summary_tax", label: "消費税額", type: "field-select" },
+      ],
+    },
     { name: "total", label: "合計金額", type: "field-select" },
     { name: "notes", label: "備考", type: "field-select" },
   ],
