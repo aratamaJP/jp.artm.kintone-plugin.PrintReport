@@ -294,6 +294,7 @@ export default defineComponent({
     };
 
     const onConfirmOk = () => {
+      reloadState(); // Re-load the state to discard changes
       if (confirmOkAction) {
         confirmOkAction();
       }
@@ -431,8 +432,11 @@ export default defineComponent({
 
 
     const loadConfig = () => {
+      reports.value = [];
+      selectedReportIndex.value = null;
+
       if (props.config) {
-        if (props.config.reports) {
+        if (props.config.reports && props.config.reports.length > 0) {
           reports.value = JSON.parse(props.config.reports);
           if (reports.value.length > 0) {
             selectedReportIndex.value = 0;
@@ -443,15 +447,19 @@ export default defineComponent({
         }
       }
     };
-
-    onMounted(() => {
+    
+    const reloadState = () => {
       loadConfig();
-      fetchKintoneFields();
-      purchaseUrl.value = getPurchaseUrl();
       initialState.value = JSON.stringify({
         reports: reports.value,
         licenseKey: licenseKey.value,
       });
+    };
+
+    onMounted(() => {
+      reloadState();
+      fetchKintoneFields();
+      purchaseUrl.value = getPurchaseUrl();
     });
 
     const openTemplateDialog = () => {
