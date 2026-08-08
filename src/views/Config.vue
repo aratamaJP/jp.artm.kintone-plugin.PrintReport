@@ -1,153 +1,172 @@
 <template>
   <div id="option-root">
-    <div class="container">
-      <!-- Left: Report List -->
-      <div class="report-list-section">
-        <h2>帳票一覧</h2>
-        <div class="report-list-toolbar">
-          <KintoneUiButton text="追加" @callback-on-click="openTemplateDialog" />
+    <div class="tabs">
+      <button :class="{ active: currentTab === 'reports' }" @click="switchTab('reports')">
+        帳票一覧
+      </button>
+      <button :class="{ active: currentTab === 'license' }" @click="switchTab('license')">
+        ライセンス設定
+      </button>
+    </div>
+
+    <!-- Reports Tab -->
+    <div v-if="currentTab === 'reports'" class="tab-content">
+      <div class="container">
+        <!-- Left: Report List -->
+        <div class="report-list-section">
+          <h2>帳票一覧</h2>
+          <div class="report-list-toolbar">
+            <KintoneUiButton text="追加" @callback-on-click="openTemplateDialog" />
+          </div>
+          <ul class="report-list">
+            <li
+              v-for="(report, index) in reports"
+              :key="index"
+              :class="{ selected: index == selectedReportIndex }"
+              @click="selectReport(index)"
+            >
+              <span>{{ report.name }}</span>
+              <div class="report-list-buttons">
+                <button class="btn-reorder" @click.stop="moveReportUp(index)" :disabled="index === 0">↑</button>
+                <button class="btn-reorder" @click.stop="moveReportDown(index)" :disabled="index === reports.length - 1">↓</button>
+                <button class="btn-delete" @click.stop="deleteReport(index)">
+                  <img :src="imgDelete" alt="削除" />
+                </button>
+              </div>
+            </li>
+          </ul>
         </div>
-        <ul class="report-list">
-          <li
-            v-for="(report, index) in reports"
-            :key="index"
-            :class="{ selected: index === selectedReportIndex }"
-            @click="selectReport(index)"
-          >
-            <span>{{ report.name }}</span>
-            <button class="btn-delete" @click.stop="deleteReport(index)">
-              <img :src="imgDelete" alt="削除" />
-            </button>
-          </li>
-        </ul>
-      </div>
 
-      <!-- Right: Report Editor -->
-      <div class="report-editor-section" v-if="selectedReport">
-        <div class="report-editor-header">
-          <h2>帳票設定</h2>
-          <KintoneUiButton text="プレビュー" @callback-on-click="preview" />
-        </div>
-        <section class="template-name-container">
-          <label for="report-name">テンプレート</label>
-          <span>{{ templateDefinition.name }}</span>
-        </section>
-        <section>
-          <label for="report-name" class="require-field">帳票名</label>
-          <KintoneUiText
-            id="report-name"
-            :value="selectedReport.name"
-            @callback-on-change="updateSelectedReportName"
-          />
-        </section>
+        <!-- Right: Report Editor -->
+        <div class="report-editor-section" v-if="selectedReport">
+          <div class="report-editor-header">
+            <h2>帳票設定</h2>
+            <KintoneUiButton text="プレビュー" @callback-on-click="preview" />
+          </div>
+          <section class="template-name-container">
+            <label for="report-name">テンプレート</label>
+            <span>{{ templateDefinition.name }}</span>
+          </section>
+          <section>
+            <label for="report-name" class="require-field">帳票名</label>
+            <KintoneUiText
+              id="report-name"
+              :value="selectedReport.name"
+              @callback-on-change="updateSelectedReportName"
+            />
+          </section>
 
-        <!-- Template Parameters Section -->
-        <div v-if="templateDefinition && templateDefinition.params" class="template-params-section">
-          <h3>テンプレート設定</h3>
-          <div v-for="param in templateDefinition.params" :key="param.name">
-            <!-- 'text' type parameter -->
-            <section v-if="param.type === 'text'">
-              <label :for="`param-${param.name}`">{{ param.label }}</label>
-              <KintoneUiText
-                :id="`param-${param.name}`"
-                :value="templateParamsData[param.name]"
-                @callback-on-change="updateParam(param.name)($event)"
-              />
-            </section>
-
-            <!-- 'text-area' type parameter -->
-            <section v-if="param.type === 'text-area'">
-              <label :for="`param-${param.name}`">{{ param.label }}</label>
-              <textarea
-                :id="`param-${param.name}`"
-                class="kintoneplugin-textarea"
-                v-model="templateParamsData[param.name]"
-              ></textarea>
-            </section>
-
-            <!-- 'field-select' type parameter -->
-            <section v-if="param.type === 'field-select'">
+          <!-- Template Parameters Section -->
+          <div v-if="templateDefinition && templateDefinition.params" class="template-params-section">
+            <h3>テンプレート設定</h3>
+            <div v-for="param in templateDefinition.params" :key="param.name">
+              <!-- 'text' type parameter -->
+              <section v-if="param.type === 'text'">
                 <label :for="`param-${param.name}`">{{ param.label }}</label>
-                <KintoneUiDropdown
-                    :id="`param-${param.name}`"
-                    :value="templateParamsData[param.name]"
-                    :options="appFields"
-                    @callback-on-change="updateParam(param.name)($event)"
+                <KintoneUiText
+                  :id="`param-${param.name}`"
+                  :value="templateParamsData[param.name]"
+                  @callback-on-change="updateParam(param.name)($event)"
                 />
-            </section>
+              </section>
 
-            <!-- 'table-select' type parameter -->
-            <div v-if="param.type === 'table-select'" class="table-param-section">
-                <h4>{{ param.label }}</h4>
-                <section>
-                    <label :for="`param-${param.name}-table`">対象テーブル</label>
-                    <KintoneUiDropdown
-                        :id="`param-${param.name}-table`"
-                        :value="templateParamsData[param.name]?.tableCode"
-                        :options="appTables"
-                        @callback-on-change="updateTableParam(param.name, 'tableCode', null)($event)"
-                    />
-                </section>
-                <div v-if="templateParamsData[param.name]?.tableCode" class="table-sub-params">
-                    <section v-for="subParam in param.params" :key="subParam.name">
-                        <label :for="`param-${param.name}-${subParam.name}`">{{ subParam.label }}</label>
-                        <KintoneUiDropdown
-                            :id="`param-${param.name}-${subParam.name}`"
-                            :value="templateParamsData[param.name]?.mappings?.[subParam.name]"
-                            :options="getTableFields(templateParamsData[param.name]?.tableCode)"
-                            @callback-on-change="updateTableParam(param.name, 'mappings', subParam.name)($event)"
-                        />
-                    </section>
-                </div>
+              <!-- 'text-area' type parameter -->
+              <section v-if="param.type === 'text-area'">
+                <label :for="`param-${param.name}`">{{ param.label }}</label>
+                <textarea
+                  :id="`param-${param.name}`"
+                  class="kintoneplugin-textarea"
+                  v-model="templateParamsData[param.name]"
+                ></textarea>
+              </section>
+
+              <!-- 'field-select' type parameter -->
+              <section v-if="param.type === 'field-select'">
+                  <label :for="`param-${param.name}`">{{ param.label }}</label>
+                  <KintoneUiDropdown
+                      :id="`param-${param.name}`"
+                      :value="templateParamsData[param.name]"
+                      :options="appFields"
+                      @callback-on-change="updateParam(param.name)($event)"
+                  />
+              </section>
+
+              <!-- 'table-select' type parameter -->
+              <div v-if="param.type === 'table-select'" class="table-param-section">
+                  <h4>{{ param.label }}</h4>
+                  <section>
+                      <label :for="`param-${param.name}-table`">対象テーブル</label>
+                      <KintoneUiDropdown
+                          :id="`param-${param.name}-table`"
+                          :value="templateParamsData[param.name]?.tableCode"
+                          :options="appTables"
+                          @callback-on-change="updateTableParam(param.name, 'tableCode', null)($event)"
+                      />
+                  </section>
+                  <div v-if="templateParamsData[param.name]?.tableCode" class="table-sub-params">
+                      <section v-for="subParam in param.params" :key="subParam.name">
+                          <label :for="`param-${param.name}-${subParam.name}`">{{ subParam.label }}</label>
+                          <KintoneUiDropdown
+                              :id="`param-${param.name}-${subParam.name}`"
+                              :value="templateParamsData[param.name]?.mappings?.[subParam.name]"
+                              :options="getTableFields(templateParamsData[param.name]?.tableCode)"
+                              @callback-on-change="updateTableParam(param.name, 'mappings', subParam.name)($event)"
+                          />
+                      </section>
+                  </div>
+              </div>
             </div>
           </div>
+
+
+
+          <section>
+            <label>有効/無効</label>
+            <div class="radio-group">
+              <label>
+                <input
+                  type="radio"
+                  v-model="selectedReport.enabled"
+                  :value="true"
+                />
+                有効
+              </label>
+              <label>
+                <input
+                  type="radio"
+                  v-model="selectedReport.enabled"
+                  :value="false"
+                />
+                無効
+              </label>
+            </div>
+          </section>
         </div>
-
-
-
-        <section>
-          <label>有効/無効</label>
-          <div class="radio-group">
-            <label>
-              <input
-                type="radio"
-                v-model="selectedReport.enabled"
-                :value="true"
-              />
-              有効
-            </label>
-            <label>
-              <input
-                type="radio"
-                v-model="selectedReport.enabled"
-                :value="false"
-              />
-              無効
-            </label>
-          </div>
-        </section>
-      </div>
-       <div v-else class="report-editor-section placeholder">
-        <p>帳票を選択または追加してください。</p>
+        <div v-else class="report-editor-section placeholder">
+          <p>帳票を選択または追加してください。</p>
+        </div>
       </div>
     </div>
 
-    <div class="license-section">
-      <h2>ライセンス設定</h2>
-      <section>
-        <label for="license-key">ライセンスキー</label>
-        <div class="license-input-container">
-          <KintoneUiText
-            id="license-key"
-            :value="licenseKey"
-            @callback-on-change="updateLicenseKey"
-          />
-          <KintoneUiButton text="認証" @callback-on-click="verifyLicenseKey" />
-        </div>
-        <p class="license-purchase-link">
-          ライセンスキーをお持ちでない場合は、<a :href="purchaseUrl" target="_blank">こちら</a>からご購入ください。
-        </p>
-      </section>
+    <!-- License Tab -->
+    <div v-if="currentTab === 'license'" class="tab-content">
+      <div class="license-section">
+        <h2>ライセンス設定</h2>
+        <section>
+          <label for="license-key">ライセンスキー</label>
+          <div class="license-input-container">
+            <KintoneUiText
+              id="license-key"
+              :value="licenseKey"
+              @callback-on-change="updateLicenseKey"
+            />
+            <KintoneUiButton text="認証" @callback-on-click="verifyLicenseKey" />
+          </div>
+          <p class="license-purchase-link">
+            ライセンスキーをお持ちでない場合は、<a :href="purchaseUrl" target="_blank">こちら</a>からご購入ください。
+          </p>
+        </section>
+      </div>
     </div>
 
     <section id="save-btns">
@@ -185,6 +204,14 @@
         <KintoneUiButton text="キャンセル" @callback-on-click="closeTemplateDialog" />
       </template>
     </ModalDialog>
+
+    <ConfirmDialog
+      v-if="confirmDlgVisible"
+      :title="confirmTitle"
+      :message="confirmMessage"
+      @ok="onConfirmOk"
+      @cancel="onConfirmCancel"
+    />
   </div>
 </template>
 
@@ -192,6 +219,7 @@
 import { defineComponent, ref, onMounted, computed, watch } from "vue";
 
 import AlertDialog from "@/common/vue/components/alert_dialog.vue";
+import ConfirmDialog from "@/common/vue/components/confirm_dialog.vue";
 import KintoneUiButton from "@/common/vue/components/kintone_ui_button.vue";
 import KintoneUiText from "@/common/vue/components/kintone_ui_text.vue";
 import KintoneUiDropdown from "@/common/vue/components/kintone_ui_dropdown.vue";
@@ -219,6 +247,7 @@ export default defineComponent({
     KintoneUiText,
     KintoneUiDropdown,
     AlertDialog,
+    ConfirmDialog,
     ModalDialog,
   },
   props: ["config"],
@@ -233,7 +262,53 @@ export default defineComponent({
     const alertTitle = ref("");
     const alertMessage = ref("");
 
+    const confirmDlgVisible = ref(false);
+    const confirmTitle = ref("");
+    const confirmMessage = ref("");
+    let confirmOkAction: (() => void) | null = null;
+
     const showTemplateDialog = ref(false);
+
+    const currentTab = ref("reports");
+
+    const initialState = ref<string>("");
+
+    const isDirty = computed(() => {
+      const currentState = JSON.stringify({
+        reports: reports.value,
+        licenseKey: licenseKey.value,
+      });
+      return initialState.value !== currentState;
+    });
+
+    const resetConfirm = () => {
+      confirmDlgVisible.value = false;
+      confirmTitle.value = "";
+      confirmMessage.value = "";
+      confirmOkAction = null;
+    };
+
+    const onConfirmOk = () => {
+      if (confirmOkAction) {
+        confirmOkAction();
+      }
+      resetConfirm();
+    };
+
+    const onConfirmCancel = () => {
+      resetConfirm();
+    };
+
+    const confirmIfNeeded = (action: () => void) => {
+      if (isDirty.value) {
+        confirmTitle.value = "未保存の変更があります";
+        confirmMessage.value = "変更を破棄して続行しますか？";
+        confirmOkAction = action;
+        confirmDlgVisible.value = true;
+      } else {
+        action();
+      }
+    };
 
     const selectedReport = computed(() => {
       if (selectedReportIndex.value !== null) {
@@ -368,10 +443,16 @@ export default defineComponent({
       loadConfig();
       fetchKintoneFields();
       purchaseUrl.value = getPurchaseUrl();
+      initialState.value = JSON.stringify({
+        reports: reports.value,
+        licenseKey: licenseKey.value,
+      });
     });
 
     const openTemplateDialog = () => {
-      showTemplateDialog.value = true;
+      confirmIfNeeded(() => {
+        showTemplateDialog.value = true;
+      });
     };
 
     const closeTemplateDialog = () => {
@@ -403,7 +484,10 @@ export default defineComponent({
     };
 
     const selectReport = (index: number) => {
-      selectedReportIndex.value = index;
+      if (index === selectedReportIndex.value) return;
+      confirmIfNeeded(() => {
+        selectedReportIndex.value = index;
+      });
     };
 
     const updateSelectedReportName = (newName: string) => {
@@ -430,6 +514,10 @@ export default defineComponent({
         };
         console.log("保存するプラグイン設定: ", configToSave);
         await pluginSetConfigAsync(configToSave);
+        initialState.value = JSON.stringify({
+          reports: reports.value,
+          licenseKey: licenseKey.value,
+        });
         showAlertDlg("設定保存完了", "プラグインの設定を更新しました。<br>アプリの動作に反映するためには、アプリの設定画面で「アプリの更新」の実行が必要です。");
       } catch (e: any) {
         showAlertDlg("エラー", `設定の保存に失敗しました: ${e.message}`);
@@ -437,7 +525,9 @@ export default defineComponent({
     };
 
     const cancel = () => {
-      window.location.href = "./";
+      confirmIfNeeded(() => {
+        window.location.href = "./";
+      });
     };
 
     const preview = () => {
@@ -462,6 +552,37 @@ export default defineComponent({
 
     const updateLicenseKey = (v: string) => {
       licenseKey.value = v;
+    };
+
+    const switchTab = (tabName: "reports" | "license") => {
+      if (tabName === currentTab.value) return;
+      confirmIfNeeded(() => {
+        currentTab.value = tabName;
+      });
+    };
+
+    const moveReportUp = (index: number) => {
+      if (index > 0) {
+        const report = reports.value.splice(index, 1)[0];
+        reports.value.splice(index - 1, 0, report);
+        if (selectedReportIndex.value === index) {
+          selectedReportIndex.value = index - 1;
+        } else if (selectedReportIndex.value === index - 1) {
+          selectedReportIndex.value = index;
+        }
+      }
+    };
+
+    const moveReportDown = (index: number) => {
+      if (index < reports.value.length - 1) {
+        const report = reports.value.splice(index, 1)[0];
+        reports.value.splice(index + 1, 0, report);
+        if (selectedReportIndex.value === index) {
+          selectedReportIndex.value = index + 1;
+        } else if (selectedReportIndex.value === index + 1) {
+          selectedReportIndex.value = index;
+        }
+      }
     };
 
     return {
@@ -493,13 +614,45 @@ export default defineComponent({
       licenseKey,
       purchaseUrl,
       verifyLicenseKey,
-      updateLicenseKey
+      updateLicenseKey,
+      currentTab,
+      switchTab,
+      moveReportUp,
+      moveReportDown,
+      confirmDlgVisible,
+      confirmTitle,
+      confirmMessage,
+      onConfirmOk,
+      onConfirmCancel,
     };
   },
 });
 </script>
 
 <style scoped>
+.tabs {
+  margin-bottom: 20px;
+  border-bottom: 1px solid #ccc;
+}
+.tabs button {
+  padding: 10px 20px;
+  border: none;
+  background-color: transparent;
+  cursor: pointer;
+  font-size: 16px;
+  border-bottom: 3px solid transparent;
+}
+.tabs button.active {
+  border-bottom-color: #3498db;
+  color: #3498db;
+}
+.tab-content {
+  /*
+  padding: 20px;
+  border: 1px solid #ddd;
+  border-top: none;
+  */
+}
 .report-editor-header {
   display: flex;
   justify-content: space-between;
@@ -552,6 +705,20 @@ export default defineComponent({
 }
 .report-list li.selected {
   background-color: #e3f2fd;
+}
+.report-list-buttons {
+  display: flex;
+  align-items: center;
+}
+.btn-reorder {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 1.2em;
+}
+.btn-reorder:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
 }
 .btn-delete {
   background: transparent;
@@ -623,9 +790,11 @@ export default defineComponent({
   margin-top: 10px;
 }
 .license-section {
+  /*
   border-top: 1px solid #ccc;
   margin-top: 2em;
   padding-top: 1.5em;
+  */
 }
 .license-section h2 {
   margin-bottom: 1em;
