@@ -22,7 +22,7 @@
             <li
               v-for="(report, index) in reports"
               :key="index"
-              :class="{ selected: index == selectedReportIndex }"
+              :class="{ selected: index === selectedReportIndex }"
               @click="selectReport(index)"
             >
               <span>{{ report.name }}</span>
@@ -216,7 +216,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, onMounted, computed, watch } from "vue";
+import { defineComponent, ref, onMounted, computed, watch, PropType } from "vue";
 
 import AlertDialog from "@/common/vue/components/alert_dialog.vue";
 import ConfirmDialog from "@/common/vue/components/confirm_dialog.vue";
@@ -250,7 +250,12 @@ export default defineComponent({
     ConfirmDialog,
     ModalDialog,
   },
-  props: ["config"],
+  props: {
+    config: {
+      type: Object as PropType<{ [key: string]: string }>,
+      required: true,
+    },
+  },
   setup(props) {
     const reports = ref<Report[]>([]);
     const selectedReportIndex = ref<number | null>(null);

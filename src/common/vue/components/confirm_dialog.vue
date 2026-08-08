@@ -7,10 +7,10 @@
       <p>{{ message }}</p>
     </template>
     <template #footer>
-      <button class="kintoneplugin-button-dialog-cancel" @click="onClose('cancel')">
+      <button class="kintoneplugin-button-dialog-cancel" @click="onCancel">
         {{ cancelText }}
       </button>
-      <button class="kintoneplugin-button-dialog-ok" @click="onClose('ok')">
+      <button class="kintoneplugin-button-dialog-ok" @click="onOk">
         {{ okText }}
       </button>
     </template>
@@ -44,14 +44,18 @@ export default defineComponent({
       default: 'Cancel',
     },
   },
-  emits: ['close'],
+  emits: ['ok', 'cancel'],
   setup(props, { emit }) {
-    const onClose = (result: 'ok' | 'cancel') => {
-      emit('close', result);
+    const onOk = () => {
+      emit('ok');
+    };
+    const onCancel = () => {
+      emit('cancel');
     };
 
     return {
-      onClose,
+      onOk,
+      onCancel,
     };
   },
 });
