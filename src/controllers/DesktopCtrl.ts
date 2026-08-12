@@ -1,6 +1,21 @@
+import { TEMPLATES } from "@/views/templates";
+
 export class DesktopCtrl {
-  public static print(html: string): void {
-    let printContent = html;
+  public static print(
+    report: any,
+    record: any,
+  ): void {
+    let printData = this.createPrintData(report, record);
+
+    const templateDefinition = TEMPLATES[report.template as keyof typeof TEMPLATES];
+    if (templateDefinition && 'calculations' in templateDefinition && templateDefinition.calculations) {
+        const calculatedData = this.processCalculations(templateDefinition.calculations, printData);
+        printData = { ...printData, ...calculatedData };
+    }
+
+    let printContent = this.renderTemplate(report.html, printData);
+
+
     if (!printContent) {
       alert("印刷する内容がありません。");
       return;
@@ -43,94 +58,186 @@ export class DesktopCtrl {
       printWindow.document.write(printContent);
       printWindow.document.close();
       printWindow.focus();
+      //
+      // If you want to close the print window automatically after printing, uncomment the following line.
+      //
+      // printWindow.onafterprint = () => printWindow.close();
+      //
       printWindow.print();
-      printWindow.close();
     }
+  }
+
+  private static processCalculations(calculations: any, printData: any): { [key: string]: any } {
+    const sourceTableName = calculations.sourceTable;
+    const sourceTableData = printData[sourceTableName];
+
+    if (!sourceTableData || !Array.isArray(sourceTableData)) {
+      return {};
+    }
+
+    const groupBySourceField = calculations.groupBy;
+
+    const groupedData: { [key: string]: any[] } = {};
+    for (const row of sourceTableData) {
+      const key = row[groupBySourceField];
+      if (key === undefined || key === null) continue;
+
+      if (!groupedData[key]) {
+        groupedData[key] = [];
+      }
+      groupedData[key].push(row);
+    }
+
+    const calculatedRows: any[] = [];
+    for (const key in groupedData) {
+      const group = groupedData[key];
+      const newRow: { [key: string]: any } = {};
+
+      // Pass 1: Handle key and aggregations
+      for (const fieldRule of calculations.fields) {
+        const targetField = fieldRule.targetField;
+        if (fieldRule.source === 'groupKey') {
+          newRow[targetField] = key;
+        } else if (fieldRule.aggregate === 'sum') {
+          const sourceField = fieldRule.sourceField;
+          if (!sourceField) continue;
+
+          const sum = group.reduce((acc, groupRow) => {
+            const value = parseFloat(groupRow[sourceField] || '0');
+            return acc + (isNaN(value) ? 0 : value);
+          }, 0);
+          newRow[targetField] = sum;
+        }
+      }
+
+      // Pass 2: Handle formulas
+      for (const fieldRule of calculations.fields) {
+        if (fieldRule.formula) {
+          const targetField = fieldRule.targetField;
+          const formula = fieldRule.formula;
+          const context = newRow;
+          const contextKeys = Object.keys(context);
+          const contextValues = contextKeys.map(k => context[k]);
+
+          try {
+            const formulaFunc = new Function(...contextKeys, `return ${formula};`);
+            const result = formulaFunc(...contextValues);
+            newRow[targetField] = result;
+          } catch (e) {
+            console.error(`Error evaluating formula for ${targetField}:`, e);
+            newRow[targetField] = 'ERROR';
+          }
+        }
+      }
+      calculatedRows.push(newRow);
+    }
+
+    const targetTableName = calculations.targetTable;
+    return {
+      [targetTableName]: calculatedRows
+    };
+  }
+
+
+  private static createPrintData(report: any, record: any): { [key: string]: any } {
+    const printData: { [key:string]: any } = {};
+    const params = JSON.parse(report.template_params);
+
+    for (const key in params) {
+      const param_setting = params[key];
+      if(typeof param_setting == 'string') {
+        //
+        // 通常フィールド
+        //
+        const fieldCode = param_setting;
+        printData[key] = record[fieldCode]?.value ?? '';
+      } else if (typeof param_setting === 'object' && param_setting !== null && param_setting.tableCode) {
+        //
+        // テーブル行
+        //
+        const tableCode = param_setting.tableCode;
+        const mappings = param_setting.mappings;
+        if (record[tableCode] && record[tableCode].value) {
+          const tableData = record[tableCode].value.map((row: any) => {
+            const rowData: { [key: string]: any } = {};
+            for (const mapKey in mappings) {
+              const fieldCode = mappings[mapKey];
+              rowData[mapKey] = row.value[fieldCode]?.value ?? '';
+            }
+            return rowData;
+          });
+          printData[key] = tableData;
+        }
+      }
+    }
+    return printData;
   }
 
   public static renderTemplate(
     template: string,
-    record: any,
-    params: any,
+    data: any,
   ): string {
     let renderedHtml = template;
 
-    // Process all parameters from the config
-    for (const placeholder in params) {
-      if (!Object.prototype.hasOwnProperty.call(params, placeholder)) {
-        continue;
-      }
+    const tableRegex = /<tbody>([\s\S]*?)<\/tbody>/gi;
+    const tableMatches = [...renderedHtml.matchAll(tableRegex)];
 
-      const mappingInfo = params[placeholder];
+    for (const tableMatch of tableMatches) {
+      const originalTbody = tableMatch[0];
+      const tbodyContent = tableMatch[1];
 
-      // Handle table parameters
-      if (
-        typeof mappingInfo === "object" &&
-        mappingInfo.tableCode &&
-        mappingInfo.mappings
-      ) {
-        const tableCode = mappingInfo.tableCode;
-        const tableMappings = mappingInfo.mappings;
-        const tableData = record[tableCode]?.value;
+      const rowTemplateRegex = /<tr[^>]*>([\s\S]*?)<\/tr>/i;
+      const rowMatch = tbodyContent.match(rowTemplateRegex);
 
-        if (!tableData || !Array.isArray(tableData)) {
-          continue;
-        }
-        const tableRegex = /<tbody>[\s\S]*?<\/tbody>/i;
-        const tableMatch = renderedHtml.match(tableRegex);
+      if (!rowMatch) continue;
 
-        if (!tableMatch) {
-          continue;
-        }
+      const rowTemplate = rowMatch[0];
+      const placeholdersInRow = [...rowTemplate.matchAll(/\{\{([a-zA-Z0-9_]+)\}\}/g)].map(m => m[1]);
 
-        const originalTbody = tableMatch[0];
-        const rowTemplateRegex = /<tr.*?>([\s\S]*?)<\/tr>/i;
-        const rowMatch = originalTbody.match(rowTemplateRegex);
+      if (placeholdersInRow.length === 0) continue;
 
-        if (!rowMatch) {
-          continue;
-        }
-
-        const rowTemplate = rowMatch[0];
-        let generatedRows = "";
-
-        tableData.forEach((row) => {
-          let currentRowHtml = rowTemplate;
-          for (const subPlaceholder in tableMappings) {
-            if (
-              !Object.prototype.hasOwnProperty.call(
-                tableMappings,
-                subPlaceholder,
-              )
-            ) {
-              continue;
-            }
-
-            const subFieldCode = tableMappings[subPlaceholder];
-            const cellValue = row.value[subFieldCode]?.value;
-
-            const regex = new RegExp(`\\{\\{${subPlaceholder}\\}\\}`, "g");
-            currentRowHtml = currentRowHtml.replace(
-              regex,
-              DesktopCtrl.escapeHtml(cellValue ?? ""),
-            );
+      // Find which table data corresponds to this row
+      let tableDataKey: string | null = null;
+      for (const key in data) {
+        if (Array.isArray(data[key]) && data[key].length > 0) {
+          const firstRow = data[key][0];
+          if (typeof firstRow === 'object' && placeholdersInRow.every(p => Object.prototype.hasOwnProperty.call(firstRow, p))) {
+            tableDataKey = key;
+            break;
           }
-          generatedRows += currentRowHtml;
-        });
-
-        renderedHtml = renderedHtml.replace(
-          originalTbody,
-          `<tbody>${generatedRows}</tbody>`,
-        );
+        }
       }
-      // Handle regular field parameters
-      else if (typeof mappingInfo === "string") {
-        const fieldCode = mappingInfo;
-        const fieldValue = record[fieldCode]?.value;
+
+      if (!tableDataKey) continue;
+
+      const tableData = data[tableDataKey];
+      let generatedRows = "";
+
+      tableData.forEach((row: any) => {
+        let currentRowHtml = rowTemplate;
+        for (const placeholder in row) {
+          const regex = new RegExp(`\\{\\{${placeholder}\\}\\}`, "g");
+          currentRowHtml = currentRowHtml.replace(
+            regex,
+            this.escapeHtml(row[placeholder] ?? ""),
+          );
+        }
+        generatedRows += currentRowHtml;
+      });
+
+      renderedHtml = renderedHtml.replace(
+        originalTbody,
+        `<tbody>${generatedRows}</tbody>`,
+      );
+    }
+
+    // Handle regular field parameters
+    for (const placeholder in data) {
+      if (!Array.isArray(data[placeholder])) {
         const regex = new RegExp(`\\{\\{${placeholder}\\}\\}`, "g");
         renderedHtml = renderedHtml.replace(
           regex,
-          DesktopCtrl.escapeHtml(fieldValue ?? ""),
+          this.escapeHtml(data[placeholder] ?? ""),
         );
       }
     }
@@ -140,6 +247,7 @@ export class DesktopCtrl {
 
     return renderedHtml;
   }
+
 
   private static escapeHtml(str: any): string {
     if (str === null || str === undefined) {

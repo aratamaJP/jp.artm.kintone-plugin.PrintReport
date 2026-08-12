@@ -2,7 +2,7 @@
   <div class="kintoneplugin-dropdown-outer">
     <select
       class="kintone-select"
-      :value="value"
+      :value="stringValue"
       @change="handleChange"
     >
       <option
@@ -39,6 +39,8 @@ export default defineComponent({
   },
   emits: ["callback-on-change"],
   setup(props, { emit }) {
+    const stringValue = computed(() => String(props.value ?? ""));
+
     // Normalize options supporting both strings and custom objects
     const normalizedOptions = computed<DropdownOption[]>(() => {
       return props.options.map((option: any) => {
@@ -60,6 +62,7 @@ export default defineComponent({
     };
 
     return {
+      stringValue,
       normalizedOptions,
       handleChange,
     };

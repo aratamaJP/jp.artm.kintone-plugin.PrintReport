@@ -118,16 +118,13 @@ export default defineComponent({
         return;
       }
 
-      const record = kintone.app.record.get();
-      if (!record) {
+      const kintoneRecord = kintone.app.record.get();
+      if (!kintoneRecord || !kintoneRecord.record) {
         showAlertDlg("エラー", "レコードデータが取得できません。");
         return;
       }
 
-      const params = report.template_params ? JSON.parse(report.template_params) : {};
-
-      const renderedHtml = DesktopCtrl.renderTemplate(report.html, record.record, params);
-      DesktopCtrl.print(renderedHtml);
+      DesktopCtrl.print(report, kintoneRecord.record);
 
       closePrintDialog();
     };

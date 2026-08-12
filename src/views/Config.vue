@@ -27,8 +27,8 @@
             >
               <span>{{ report.name }}</span>
               <div class="report-list-buttons">
-                <button class="btn-reorder" @click.stop="moveReportUp(index)" :disabled="index == 0">↑</button>
-                <button class="btn-reorder" @click.stop="moveReportDown(index)" :disabled="index == reports.length - 1">↓</button>
+                <button class="btn-reorder" @click.stop="moveReportUp(index)" :disabled="index === 0">↑</button>
+                <button class="btn-reorder" @click.stop="moveReportDown(index)" :disabled="index === reports.length - 1">↓</button>
                 <button class="btn-delete" @click.stop="deleteReport(index)">
                   <img :src="imgDelete" alt="削除" />
                 </button>
@@ -85,7 +85,7 @@
                   <label :for="`param-${param.name}`">{{ param.label }}</label>
                   <KintoneUiDropdown
                       :id="`param-${param.name}`"
-                      :value="templateParamsData[param.name]"
+                      :value="String(templateParamsData[param.name] ?? '')"
                       :options="appFields"
                       @callback-on-change="updateParam(param.name)($event)"
                   />
@@ -98,7 +98,7 @@
                       <label :for="`param-${param.name}-table`">対象テーブル</label>
                       <KintoneUiDropdown
                           :id="`param-${param.name}-table`"
-                          :value="templateParamsData[param.name]?.tableCode"
+                          :value="String(templateParamsData[param.name]?.tableCode ?? '')"
                           :options="appTables"
                           @callback-on-change="updateTableParam(param.name, 'tableCode', null)($event)"
                       />
@@ -108,7 +108,7 @@
                           <label :for="`param-${param.name}-${subParam.name}`">{{ subParam.label }}</label>
                           <KintoneUiDropdown
                               :id="`param-${param.name}-${subParam.name}`"
-                              :value="templateParamsData[param.name]?.mappings?.[subParam.name]"
+                              :value="String(templateParamsData[param.name]?.mappings?.[subParam.name] ?? '')"
                               :options="getTableFields(templateParamsData[param.name]?.tableCode)"
                               @callback-on-change="updateTableParam(param.name, 'mappings', subParam.name)($event)"
                           />
@@ -126,16 +126,18 @@
               <label>
                 <input
                   type="radio"
-                  v-model="selectedReport.enabled"
-                  :value="true"
+                  name="report-enabled"
+                  :checked="selectedReport.enabled"
+                  @change="selectedReport.enabled = true"
                 />
                 有効
               </label>
               <label>
                 <input
                   type="radio"
-                  v-model="selectedReport.enabled"
-                  :value="false"
+                  name="report-enabled"
+                  :checked="!selectedReport.enabled"
+                  @change="selectedReport.enabled = false"
                 />
                 無効
               </label>
@@ -418,7 +420,7 @@ export default defineComponent({
           [subParamName]: value
         };
       }
-      
+
       templateParamsData.value = {
         ...templateParamsData.value,
         [paramName]: currentParam,
@@ -461,7 +463,7 @@ export default defineComponent({
         }
       }
     };
-    
+
     const reloadState = () => {
       loadConfig();
       initialState.value = JSON.stringify({
