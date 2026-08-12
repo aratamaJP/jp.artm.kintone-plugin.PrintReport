@@ -27,8 +27,8 @@
             >
               <span>{{ report.name }}</span>
               <div class="report-list-buttons">
-                <button class="btn-reorder" @click.stop="moveReportUp(index)" :disabled="index === 0">↑</button>
-                <button class="btn-reorder" @click.stop="moveReportDown(index)" :disabled="index === reports.length - 1">↓</button>
+                <button class="btn-reorder" @click.stop="moveReportUp(index)" :disabled="index == 0">↑</button>
+                <button class="btn-reorder" @click.stop="moveReportDown(index)" :disabled="index == reports.length - 1">↓</button>
                 <button class="btn-delete" @click.stop="deleteReport(index)">
                   <img :src="imgDelete" alt="削除" />
                 </button>
@@ -141,9 +141,36 @@
               </label>
             </div>
           </section>
+
+          <section id="save-btns">
+            <KintoneUiButton
+              text="キャンセル"
+              style="margin-right: 0.5em"
+              @callback-on-click="cancel"
+            />
+            <KintoneUiButton
+              text="保存"
+              :is-submit="true"
+              @callback-on-click="saveOnClick"
+            />
+          </section>
         </div>
-        <div v-else class="report-editor-section placeholder">
-          <p>帳票を選択または追加してください。</p>
+        <div v-else class="report-editor-section">
+          <div class="placeholder">
+            <p>帳票を選択または追加してください。</p>
+          </div>
+          <section id="save-btns">
+            <KintoneUiButton
+              text="キャンセル"
+              style="margin-right: 0.5em"
+              @callback-on-click="cancel"
+            />
+            <KintoneUiButton
+              text="保存"
+              :is-submit="true"
+              @callback-on-click="saveOnClick"
+            />
+          </section>
         </div>
       </div>
     </div>
@@ -168,19 +195,6 @@
         </section>
       </div>
     </div>
-
-    <section id="save-btns">
-      <KintoneUiButton
-        text="キャンセル"
-        style="margin-right: 0.5em"
-        @callback-on-click="cancel"
-      />
-      <KintoneUiButton
-        text="保存"
-        :is-submit="true"
-        @callback-on-click="saveOnClick"
-      />
-    </section>
 
     <AlertDialog
       v-if="alertDlgVisible"
@@ -519,7 +533,7 @@ export default defineComponent({
       alertDlgVisible.value = false;
     };
 
-    const saveOnClick = async () => {
+    const saveConfig = async (showSuccessAlert = true) => {
       try {
         const configToSave = {
           reports: JSON.stringify(reports.value),
@@ -531,11 +545,15 @@ export default defineComponent({
           reports: reports.value,
           licenseKey: licenseKey.value,
         });
-        showAlertDlg("設定保存完了", "プラグインの設定を更新しました。<br>アプリの動作に反映するためには、アプリの設定画面で「アプリの更新」の実行が必要です。");
+        if (showSuccessAlert) {
+          showAlertDlg("設定保存完了", "プラグインの設定を更新しました。<br>アプリの動作に反映するためには、アプリの設定画面で「アプリの更新」の実行が必要です。");
+        }
       } catch (e: any) {
         showAlertDlg("エラー", `設定の保存に失敗しました: ${e.message}`);
       }
     };
+
+    const saveOnClick = () => saveConfig(true);
 
     const cancel = () => {
       confirmIfNeeded(() => {
@@ -561,6 +579,9 @@ export default defineComponent({
     const verifyLicenseKey = async () => {
       const result = await verifyLicense(licenseKey.value);
       showAlertDlg(`ライセンス認証結果 (${result.status})`, result.message);
+      if (result.status === "valid") {
+        await saveConfig(false);
+      }
     };
 
     const updateLicenseKey = (v: string) => {
@@ -694,6 +715,8 @@ export default defineComponent({
 }
 .report-editor-section {
   flex-grow: 1;
+  display: flex;
+  flex-direction: column;
 }
 .report-list-toolbar {
   margin-bottom: 10px;
@@ -765,7 +788,7 @@ export default defineComponent({
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100%;
+    flex-grow: 1;
     color: #999;
 }
 .template-buttons {

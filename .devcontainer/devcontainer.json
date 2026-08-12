@@ -14,7 +14,9 @@
             // コンテナ起動時に自動インストールするVSCode拡張機能を指定
             "extensions": [
 				// Gemini拡張機能
-                "google.geminicodeassist"
+                "google.geminicodeassist",
+                // Vue拡張機能
+                "Vue.volar"
             ],
             "settings": {
 				// Geminiの Agentにすべてのアクションを許可する設定
