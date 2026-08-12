@@ -144,6 +144,26 @@ export const invoiceATemplate = {
     </div>
 </body>
 </html>`,
+  calculations: {
+    sourceTable: 'details_table',
+    targetTable: 'tax_summary_table',
+    groupBy: 'tax_rate',
+    fields: [
+      {
+        targetField: 'tax_summary_rate',
+        source: 'groupKey'
+      },
+      {
+        targetField: 'tax_summary_subtotal',
+        sourceField: 'amount',
+        aggregate: 'sum'
+      },
+      {
+        targetField: 'tax_summary_tax',
+        formula: 'Math.round(tax_summary_subtotal * (tax_summary_rate / 100))'
+      }
+    ]
+  },
   params: [
     { name: "to_company_name", label: "請求先会社名", type: "field-select" },
     { name: "to_address", label: "請求先住所", type: "field-select" },
@@ -166,16 +186,6 @@ export const invoiceATemplate = {
         { name: "price", label: "単価", type: "field-select" },
         { name: "amount", label: "金額", type: "field-select" },
         { name: "tax_rate", label: "税率", type: "field-select" },
-      ],
-    },
-    {
-      name: "tax_summary_table",
-      label: "税率毎の合計テーブル",
-      type: "table-select",
-      params: [
-        { name: "tax_summary_rate", label: "税率", type: "field-select" },
-        { name: "tax_summary_subtotal", label: "対象合計", type: "field-select" },
-        { name: "tax_summary_tax", label: "消費税額", type: "field-select" },
       ],
     },
     { name: "total", label: "合計金額", type: "field-select" },
