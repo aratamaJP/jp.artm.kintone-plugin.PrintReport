@@ -1,4 +1,6 @@
 export const quotationATemplate = {
+  templateId: "quotation-a",
+  version: "1.0.0",
   name: "見積書A",
   html: `<!DOCTYPE html>
 <html lang="ja">

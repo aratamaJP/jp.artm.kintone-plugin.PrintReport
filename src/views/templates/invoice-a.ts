@@ -1,4 +1,6 @@
 export const invoiceATemplate = {
+  templateId: "invoice-a",
+  version: "1.0.0",
   name: "請求書A (インボイス対応)",
   html: `<!DOCTYPE html>
 <html lang="ja">
