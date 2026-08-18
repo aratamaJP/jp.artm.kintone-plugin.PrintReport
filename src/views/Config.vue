@@ -43,9 +43,15 @@
             <h2>帳票設定</h2>
             <KintoneUiButton text="プレビュー" @callback-on-click="preview" />
           </div>
-          <section class="template-name-container">
-            <label for="report-name">テンプレート</label>
-            <span>{{ templateDefinition.name }}</span>
+          <section>
+            <div class="template-name-container">
+              <label>テンプレート</label>
+              <span>{{ templateDefinition.name }}</span>
+            </div>
+            <div class="template-name-container" v-if="templateDefinition && templateDefinition.version" style="margin-top: 5px">
+              <label>テンプレートバージョン</label>
+              <span>{{ templateDefinition.version }}</span>
+            </div>
           </section>
           <section>
             <label for="report-name" class="require-field">帳票名</label>

@@ -1,6 +1,6 @@
 export const invoiceATemplate = {
   templateId: "invoice-a",
-  version: "1.0.0",
+  version: "0.1.0",
   name: "請求書A (インボイス対応)",
   html: `<!DOCTYPE html>
 <html lang="ja">
@@ -110,7 +110,7 @@ export const invoiceATemplate = {
                     <td>{{quantity}}</td>
                     <td>{{price}}</td>
                     <td>{{amount}}</td>
-                    <td>{{tax_rate}}</td>
+                    <td>{{tax_rate_display}}</td>
                 </tr>
             </tbody>
         </table>
@@ -187,7 +187,8 @@ export const invoiceATemplate = {
         { name: "quantity", label: "数量", type: "field-select" },
         { name: "price", label: "単価", type: "field-select" },
         { name: "amount", label: "金額", type: "field-select" },
-        { name: "tax_rate", label: "税率", type: "field-select" },
+        { name: "tax_rate", label: "消費税率（小数・計算用）", type: "field-select" },
+        { name: "tax_rate_display", label: "消費税率（文字列・印字用）", type: "field-select" },
       ],
     },
     { name: "total", label: "合計金額", type: "field-select" },
