@@ -22,13 +22,13 @@
             <li
               v-for="(report, index) in reports"
               :key="index"
-              :class="{ selected: index === selectedReportIndex }"
+              :class="{ selected: Number(index) === selectedReportIndex }"
               @click="selectReport(index)"
             >
               <span>{{ report.name }}</span>
               <div class="report-list-buttons">
-                <button class="btn-reorder" @click.stop="moveReportUp(index)" :disabled="index === 0">↑</button>
-                <button class="btn-reorder" @click.stop="moveReportDown(index)" :disabled="index === reports.length - 1">↓</button>
+                <button class="btn-reorder" @click.stop="moveReportUp(index)" :disabled="Number(index) === 0">↑</button>
+                <button class="btn-reorder" @click.stop="moveReportDown(index)" :disabled="Number(index) === reports.length - 1">↓</button>
                 <button class="btn-delete" @click.stop="deleteReport(index)">
                   <img :src="imgDelete" alt="削除" />
                 </button>
@@ -228,6 +228,14 @@
       @ok="onConfirmOk"
       @cancel="onConfirmCancel"
     />
+
+    <ConfirmDialog
+      v-if="deleteConfirmVisible"
+      title="帳票の削除"
+      :message="deleteConfirmMessage"
+      @ok="handleDeleteConfirmOk"
+      @cancel="handleDeleteConfirmCancel"
+    />
   </div>
 </template>
 
@@ -287,6 +295,10 @@ export default defineComponent({
     const confirmTitle = ref("");
     const confirmMessage = ref("");
     let confirmOkAction: (() => void) | null = null;
+
+    const deleteConfirmVisible = ref(false);
+    const deleteConfirmMessage = ref("");
+    const indexToDelete = ref<number | null>(null);
 
     const showTemplateDialog = ref(false);
 
@@ -504,12 +516,29 @@ export default defineComponent({
 
 
     const deleteReport = (index: number) => {
-      reports.value.splice(index, 1);
-      if (selectedReportIndex.value === index) {
-        selectedReportIndex.value = reports.value.length > 0 ? 0 : null;
-      } else if (selectedReportIndex.value !== null && selectedReportIndex.value > index) {
-        selectedReportIndex.value--;
+      indexToDelete.value = index;
+      const reportName = reports.value[index]?.name || "";
+      deleteConfirmMessage.value = `帳票「${reportName}」を削除しますか？`;
+      deleteConfirmVisible.value = true;
+    };
+
+    const handleDeleteConfirmOk = () => {
+      if (indexToDelete.value !== null) {
+        const index = indexToDelete.value;
+        reports.value.splice(index, 1);
+        if (selectedReportIndex.value === index) {
+          selectedReportIndex.value = reports.value.length > 0 ? 0 : null;
+        } else if (selectedReportIndex.value !== null && selectedReportIndex.value > index) {
+          selectedReportIndex.value--;
+        }
       }
+      deleteConfirmVisible.value = false;
+      indexToDelete.value = null;
+    };
+
+    const handleDeleteConfirmCancel = () => {
+      deleteConfirmVisible.value = false;
+      indexToDelete.value = null;
     };
 
     const selectReport = (index: number) => {
@@ -660,6 +689,10 @@ export default defineComponent({
       confirmMessage,
       onConfirmOk,
       onConfirmCancel,
+      deleteConfirmVisible,
+      deleteConfirmMessage,
+      handleDeleteConfirmOk,
+      handleDeleteConfirmCancel,
     };
   },
 });
