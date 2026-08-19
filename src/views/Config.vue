@@ -572,6 +572,11 @@ export default defineComponent({
 
     const saveConfig = async (showSuccessAlert = true) => {
       try {
+        // 保存前に、現在選択されている帳票のテンプレートからHTMLを更新
+        if (selectedReport.value && selectedReport.value.template && TEMPLATES[selectedReport.value.template]) {
+          selectedReport.value.html = TEMPLATES[selectedReport.value.template].html;
+        }
+
         const configToSave = {
           reports: JSON.stringify(reports.value),
           licenseKey: licenseKey.value,
